@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.0 · 14/11/2026
+
+- **Banco de fontes próprio.** `SourcesData.lua` tem 4.226 itens, 1.075 quests e 28 dungeons, em 272 KB. O modo Quests e dungeons não lê mais outro addon: não precisa do GearQuest nem do Wishwell instalados.
+  - O banco junta o LootGoblin (quests com id, bosses, vendedores, reputação, facção) e o Wishwell Forever (% de drop, faixa das dungeons, itens que faltavam). É gerado por `tools/build-sources.mjs`.
+  - O GearQuest não entra, porque a licença dele é "todos os direitos reservados".
+- **Licença:** de MIT pra **GPL-3.0**, por causa dos dados GPL do banco. Ver `THIRD_PARTY.md`.
+- **Fontes novas:** vendedor e intendente de reputação, com a facção. A quest já feita sai pelo id que vem do banco, sem depender de nome.
+
 ## 1.3.0 · 14/11/2026
 
 - `VaultAH` no `OptionalDeps`: a varredura do VaultSync agora mora nesse addon pessoal, e o FindUpgrade precisa carregar depois dele pra usar a varredura em vez de varrer de novo.

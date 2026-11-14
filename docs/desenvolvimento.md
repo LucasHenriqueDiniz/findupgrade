@@ -16,13 +16,17 @@ npm test
 | `e2e-priest.cjs` | priest de cura sem o VaultSync: varredura própria, notas, filtros, moeda, combos, cliques, papel, `/reload`, apagar reino velho |
 | `e2e-warrior.cjs` | warrior: 2 mãos × duas armas × arma + escudo, crítico e AP do tooltip, tank, placa no 40 |
 | `e2e-vaultsync.cjs` | com o VaultSync: usa a varredura dele (o contrato do `VaultSyncAPI`) |
-| `e2e-sources.cjs` | Quests e dungeons: o banco do GearQuest e do Wishwell simulados, a facção, a quest feita, o level do item e o filtro de tipo |
+| `e2e-sources.cjs` | Quests e dungeons: o banco de verdade carrega, e com um banco pequeno de teste: facção, quest feita, level do item, filtro de tipo e o botão da janela do personagem |
 | `harness.cjs` | carrega os arquivos na ordem do `.toc` e roda um teste |
 | `stubs.lua` | a API do WoW simulada: frames, eventos, timers, `C_Item`, `C_TooltipInfo`, `C_AuctionHouse` |
 
 Num teste, você define antes `ITEMS[id] = { nome, equipLoc, classe, subclasse, level, stats, linhas do tooltip }`, `EQUIP[slot] = link(id)` e `LISTINGS = { { id, preço, link } }`, mais `CLASS`, `LEVEL` e `MONEY`. Depois chama `loadAddon()` e dispara os eventos com `fire(...)`. Os timers (`C_Timer.After`) rodam na hora, dentro do `fire`.
 
 O GitHub roda os testes a cada push (`.github/workflows/tests.yml`).
+
+## Banco de fontes
+
+`node tools/build-sources.mjs` gera o `FindUpgrade/SourcesData.lua` a partir de `tools/fontes/`. Ver [fontes.md](fontes.md) e [THIRD_PARTY.md](../THIRD_PARTY.md).
 
 ## Testar no jogo
 

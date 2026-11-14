@@ -122,7 +122,12 @@ function FU.evaluate(g, ctx, pending)
     pending[#pending + 1] = g
     return
   end
-  -- Item de dungeon do Wishwell: até carregar, o level era o mínimo da dungeon; agora é o do item.
+  -- Item do banco de fontes: nome e qualidade vêm do jogo quando ele carrega.
+  if not g.name then
+    local name, _, quality = C_Item.GetItemInfo(g.link)
+    g.name, g.quality = name, g.quality or quality
+  end
+  -- Item de dungeon só com o mínimo da dungeon: agora vale o level do item.
   if g.levelGuess then
     local lv = select(5, C_Item.GetItemInfo(g.link))
     if lv then
@@ -221,7 +226,9 @@ end
 local function pass(c, f)
   if c.kept then return true end
   if c.req > f.maxLevel then return false end
-  if f.kind and f.kind ~= "all" and not (c.g.src and c.g.src.kind == f.kind) then return false end
+  if f.kind and f.kind ~= "all" and not (c.g.src and ((c.g.src.kinds and c.g.src.kinds[f.kind]) or c.g.src.kind == f.kind)) then
+    return false
+  end
   if f.maxPiece and c.price > f.maxPiece then return false end
   return true
 end

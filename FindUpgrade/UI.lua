@@ -269,7 +269,7 @@ function FU.build()
     { value = "ah", label = "Leilão", w = 64, tip = { "Leilão", "O que está à venda no AH agora." } },
     { value = "src", label = "Quests e dungeons", w = 124,
       tip = { "Quests e dungeons", "Recompensa de quest, drop de boss de dungeon, rare e vendedor.",
-        "Lê o banco do GearQuest Forever e/ou do Wishwell Forever (precisa de um deles instalado)." } },
+        "Vem do banco de fontes que vem junto com o addon: não precisa do leiloeiro nem de outro addon." } },
   }, function(v)
     FU.db().mode = v
     FU.offset = 0
@@ -382,8 +382,8 @@ function FU.build()
   -- No modo Quests e dungeons, no lugar do preço: que tipo de fonte mostrar.
   f.kindSeg = segmented(body, {
     { value = "all", label = "Tudo", w = 50 },
-    { value = "quest", label = "Quests", w = 60, tip = { "Só recompensa de quest", "As que tu já fez somem (com o Wishwell instalado)." } },
-    { value = "dungeon", label = "Dungeons", w = 74, tip = { "Só drop de boss de dungeon", "Com o Wishwell, mostra a % de drop." } },
+    { value = "quest", label = "Quests", w = 60, tip = { "Só recompensa de quest", "As que tu já fez somem." } },
+    { value = "dungeon", label = "Dungeons", w = 74, tip = { "Só drop de dungeon", "Com o boss e a % de drop, quando o banco tem." } },
   }, function(v)
     FU.db().srcKind = v
     FU.offset = 0
@@ -678,14 +678,14 @@ function FU.draw()
   local srcMode = FU.mode() == "src"
   local info
   if FU.noData and srcMode then
-    info = "|cffff8040Pra quests e dungeons, instala o GearQuest Forever ou o Wishwell Forever: o FindUpgrade lê o banco deles.|r"
+    info = "|cffff8040O banco de fontes (SourcesData.lua) não carregou: reinstala o FindUpgrade.|r"
   elseif FU.noData then
     info = "Ainda não tem varredura do AH. Abre o leiloeiro e clica em Varrer o AH (1 a cada 15 min)."
   elseif not ctx then
     info = "Calculando..."
   elseif srcMode then
-    info = string.format("Quests e dungeons: banco do %s · %d itens · lvl %d", table.concat(FU.src.available(), " + "),
-      ctx.total or 0, ctx.level)
+    info = string.format("Quests e dungeons · %d itens · banco de %s · lvl %d", ctx.total or 0, FU.src.available() or "?",
+      ctx.level)
     if (ctx.pending or 0) > 0 then info = info .. string.format(" · %d ainda sem dados (abre de novo daqui a pouco)", ctx.pending) end
   else
     info = string.format("Varredura de %s · %d peças · teu gold %s · lvl %d", scanWhen(), ctx.total or 0,
@@ -762,7 +762,7 @@ function FU.draw()
 
   local status, canScan
   if srcMode then
-    status = "Não precisa do leiloeiro: vem do banco do " .. table.concat(FU.src.available(), " e do ") .. "."
+    status = "Não precisa do leiloeiro: vem do banco de fontes do addon."
   elseif ah.scanning() then
     status = "|cff88ccff" .. (ah.status() or "Varrendo o AH") .. ": a lista atualiza sozinha quando acabar.|r"
   elseif not ah.isOpen() then
@@ -973,7 +973,7 @@ function FU.run(msg)
   end
   if FU.mode() == "src" then
     if not FU.load() then
-      say("pra quests e dungeons, instala o GearQuest Forever ou o Wishwell Forever: o FindUpgrade lê o banco deles.")
+      say("o banco de fontes (SourcesData.lua) não carregou: reinstala o FindUpgrade.")
       return
     end
     FU.show()

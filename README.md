@@ -8,7 +8,7 @@ Addon de **WoW Forever** que procura **upgrade de equipamento**: o que está **�
 - **Armas em combo.** Compara arma de 2 mãos com 1 mão + secundária (escudo, livro ou outra arma). Usa a peça que você já tem quando ela ainda vale.
 - **Tem filtros:** level (só o seu, até +3, +5 ou +10), **preço máximo por peça** (em ouro, prata ou cobre) e "só o que cabe no meu gold".
 - **Busca no AH com um clique.** Shift+clique põe o link no chat.
-- **Quests e dungeons:** recompensa de quest, drop de boss (com a % de drop), rare e vendedor. Usa o banco do [GearQuest Forever](https://www.curseforge.com/wow/addons/gearquest-forever) e/ou do [Wishwell Forever](https://www.curseforge.com/wow/addons/wishwell-forever), se você tiver um deles instalado. Esconde a quest que você já fez e a recompensa da outra facção. Ver [docs/fontes.md](docs/fontes.md).
+- **Quests e dungeons:** recompensa de quest, drop de dungeon (com o boss e a % de drop), vendedor e intendente de reputação. O banco vem junto com o addon, não precisa de nenhum outro. Esconde a quest que você já fez e o que é da outra facção. Ver [docs/fontes.md](docs/fontes.md).
 
 ## Instalar
 
@@ -67,11 +67,11 @@ Os atributos vêm do `GetItemStats`, que funciona em qualquer idioma. Mas parte 
 
 - [docs/arquitetura.md](docs/arquitetura.md): como o código está dividido, o caminho dos dados e o que fica salvo.
 - [docs/pontuacao.md](docs/pontuacao.md): pesos de cada papel, combos de arma, filtros e o que não é levado em conta.
-- [docs/fontes.md](docs/fontes.md): o modo Quests e dungeons e o que ele lê do GearQuest e do Wishwell.
+- [docs/fontes.md](docs/fontes.md): o modo Quests e dungeons e o banco de fontes que vem junto.
 - [docs/classes.md](docs/classes.md): armadura, armas e papéis de cada classe, e como mudar.
 - [docs/idioma.md](docs/idioma.md): o que depende do idioma do cliente.
 - [docs/desenvolvimento.md](docs/desenvolvimento.md): testes fora do jogo e como contribuir.
 
 ## Licença
 
-[MIT](LICENSE).
+[GPL-3.0](LICENSE). O banco de fontes junta dados do LootGoblin e do Wishwell Forever, com os créditos e as licenças em [THIRD_PARTY.md](THIRD_PARTY.md).

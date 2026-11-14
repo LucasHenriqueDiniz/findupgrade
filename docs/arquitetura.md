@@ -8,7 +8,8 @@ O addon é a pasta `FindUpgrade/`. O `FindUpgrade.toc` carrega os arquivos nesta
 | `Util.lua` | O que todo mundo usa: escolhas salvas (`FU.db`), preço máximo em cobre, dinheiro em texto, números com vírgula |
 | `Stats.lua` | Os stats de uma peça (`GetItemStats` + tooltip), a nota dela pro papel (`FU.scoreFor`), o item que pede profissão ou reputação (`FU.blocked`), stats e pesos em texto |
 | `Scan.lua` | O equipamento à venda (`FU.ah`): a varredura própria ou a do VaultSync |
-| `Sources.lua` | Recompensa de quest e drop de dungeon (`FU.src`), lidos do banco do GearQuest e do Wishwell. Ver [fontes.md](fontes.md) |
+| `SourcesData.lua` | O banco de fontes (`FU.SOURCES`): de onde vem cada item fora do leilão. Gerado por `tools/build-sources.mjs`; não edite à mão |
+| `Sources.lua` | Lê o banco de fontes pro modo Quests e dungeons (`FU.src`). Ver [fontes.md](fontes.md) |
 | `Engine.lua` | A conta: equipado, candidatos por slot, combos de arma, filtros e resultados |
 | `UI.lua` | A janela, os dropdowns, os cliques, o skin, os eventos, o `/findupgrade` e os botões de abrir (leiloeiro, janela do personagem, atalho, menu de addons) |
 | `Bindings.xml` | O atalho de teclado (o jogo lê sozinho, não vai no `.toc`) |
