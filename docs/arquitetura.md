@@ -55,7 +55,7 @@ O `Scan.lua` decide na hora de carregar. Os dois modos têm a mesma cara:
 | `status()` | texto do progresso, ou `nil` |
 | `listeners` | funções chamadas quando uma varredura termina |
 
-**Contrato com o VaultSync.** Se existir o `VaultSyncAPI` com `loadGear`, `startScan` e `ahOpen`, o FindUpgrade não varre sozinho. Ele usa `loadGear`, `scanAt`, `startScan`, `ahOpen`, `scanning` e `scanWait`, e se registra em `VaultSyncAPI.listeners`. O formato do `gear` é o mesmo. O teste `tests/e2e-vaultsync.cjs` simula esse contrato.
+**Contrato com o VaultSync.** Se existir o `VaultSyncAPI` com `loadGear`, `startScan` e `ahOpen` (desde 14/11 quem completa isso é o addon pessoal VaultAH, que saiu do VaultSync; por isso ele está no `OptionalDeps`, pra carregar antes), o FindUpgrade não varre sozinho. Ele usa `loadGear`, `scanAt`, `startScan`, `ahOpen`, `scanning` e `scanWait`, e se registra em `VaultSyncAPI.listeners`. O formato do `gear` é o mesmo. O teste `tests/e2e-vaultsync.cjs` simula esse contrato.
 
 ## Eventos
 

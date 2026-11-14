@@ -2,6 +2,7 @@
 
 ## 1.3.0 · 14/11/2026
 
+- `VaultAH` no `OptionalDeps`: a varredura do VaultSync agora mora nesse addon pessoal, e o FindUpgrade precisa carregar depois dele pra usar a varredura em vez de varrer de novo.
 - **Botão na janela do personagem.** É uma aba verde na borda direita (tecla C) que abre e fecha a janela no último modo, sem precisar do leiloeiro.
 - **Atalho de teclado:** Opções → Atalhos → FindUpgrade (arquivo `Bindings.xml`).
 - **Menu de addons do minimapa**, no cliente que tiver (`AddonCompartmentFunc` no `.toc`).
