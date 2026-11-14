@@ -11,6 +11,7 @@ O addon é a pasta `FindUpgrade/`. O `FindUpgrade.toc` carrega os arquivos nesta
 | `SourcesData.lua` | O banco de fontes (`FU.SOURCES`): de onde vem cada item fora do leilão. Gerado por `tools/build-sources.mjs`; não edite à mão |
 | `Sources.lua` | Lê o banco de fontes pro modo Quests e dungeons (`FU.src`). Ver [fontes.md](fontes.md) |
 | `Engine.lua` | A conta: equipado, candidatos por slot, combos de arma, filtros e resultados |
+| `Tooltip.lua` | A linha de upgrade no tooltip dos itens (`FU.tip`): mesma nota da janela, contra a peça que sairia, com a diferença dos stats e de onde vem. Usa o `TooltipDataProcessor`, ou o `OnTooltipSetItem` se o cliente não tiver. Desliga com `FindUpgradeDB.tooltipOff` |
 | `UI.lua` | A janela, os dropdowns, os cliques, o skin, os eventos, o `/findupgrade` e os botões de abrir (leiloeiro, janela do personagem, atalho, menu de addons) |
 | `Bindings.xml` | O atalho de teclado (o jogo lê sozinho, não vai no `.toc`) |
 

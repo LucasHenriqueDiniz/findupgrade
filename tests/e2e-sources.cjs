@@ -92,6 +92,12 @@ assert(not f.shown, "o botão fecha a janela")
 cb.scripts.OnClick(cb)
 runTimers()
 assert(f.shown and FindUpgradeDB.mode == "src", "e abre de novo no modo Quests e dungeons")
+-- Caixinha da dica no tooltip: liga e desliga (FindUpgradeDB.tooltipOff).
+assert(f.tipToggle.checked == true, "dica no tooltip começa ligada")
+f.tipToggle.scripts.OnClick(f.tipToggle)
+assert(FindUpgradeDB.tooltipOff == true and f.tipToggle.checked == false, "desliga")
+f.tipToggle.scripts.OnClick(f.tipToggle)
+assert(not FindUpgradeDB.tooltipOff and f.tipToggle.checked == true, "liga de novo")
 -- Volta pro leilão.
 f.modeSeg.buttons[1].scripts.OnClick(f.modeSeg.buttons[1])
 assert(FindUpgradeDB.mode == "ah" and f.maxBox.shown and not f.kindSeg.buttons[1].shown, "modo leilão")

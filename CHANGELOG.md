@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0 · 14/11/2026
+
+- **Dica no tooltip.** No tooltip de qualquer item que o personagem equipa aparece "Upgrade +X · no lugar de Y", "Pior que Y" ou "Igual". Embaixo, a diferença dos stats que pesam pro papel, o level pedido e, no upgrade, de onde vem. Usa a mesma nota da janela e fica no `Tooltip.lua`.
+- **Caixinha "Dica no tooltip"** no alto da janela pra desligar (`FindUpgradeDB.tooltipOff`).
+
 ## 1.4.0 · 14/11/2026
 
 - **Banco de fontes próprio.** `SourcesData.lua` tem 4.226 itens, 1.075 quests e 28 dungeons, em 272 KB. O modo Quests e dungeons não lê mais outro addon: não precisa do GearQuest nem do Wishwell instalados.

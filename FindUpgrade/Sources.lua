@@ -57,6 +57,18 @@ local function bestSource(S, e, mySide)
   return best
 end
 
+-- A melhor fonte de um item só (o tooltip usa): nil se não está no banco ou não serve mais
+-- (quest feita, peça da outra facção).
+function src.forItem(id)
+  local S = FU.SOURCES
+  local e = S and S.items[id]
+  if not e then return nil end
+  local faction = UnitFactionGroup and UnitFactionGroup("player")
+  local mySide = (faction == "Alliance" and 1) or (faction == "Horde" and 2) or 0
+  if not (e[2] == 0 or mySide == 0 or e[2] == mySide) then return nil end
+  return bestSource(S, e, mySide)
+end
+
 -- Os candidatos no formato do leilão (o resto do addon não muda): { id, link, level, loc, class,
 -- sub, price = 0, n = 1, src = { kind, kinds, quest, questId, qlevel, instance, npc, rate, zone } }.
 -- Sai a peça da outra facção e a recompensa de quest que ele já fez. Nome e qualidade vêm do jogo

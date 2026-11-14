@@ -9,6 +9,7 @@ Addon de **WoW Forever** que procura **upgrade de equipamento**: o que está **�
 - **Tem filtros:** level (só o seu, até +3, +5 ou +10), **preço máximo por peça** (em ouro, prata ou cobre) e "só o que cabe no meu gold".
 - **Busca no AH com um clique.** Shift+clique põe o link no chat.
 - **Quests e dungeons:** recompensa de quest, drop de dungeon (com o boss e a % de drop), vendedor e intendente de reputação. O banco vem junto com o addon, não precisa de nenhum outro. Esconde a quest que você já fez e o que é da outra facção. Ver [docs/fontes.md](docs/fontes.md).
+- **Dica no tooltip:** no tooltip de qualquer item que você equipa (bolsa, loot, vendedor, recompensa de quest, link no chat) aparece se é upgrade, quanto, no lugar de quê, o que muda nos stats e de onde ele vem. A caixinha "Dica no tooltip", no alto da janela, desliga.
 
 ## Instalar
 
