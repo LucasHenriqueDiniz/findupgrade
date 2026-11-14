@@ -59,7 +59,8 @@ end
 
 local function hideTip() if GameTooltip then GameTooltip:Hide() end end
 
-local function tip(owner, lines)
+local tip -- (abaixo; o Config.lua usa pelo FU.ui)
+function tip(owner, lines)
   if not GameTooltip then return end
   GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
   for i, l in ipairs(lines) do
@@ -67,6 +68,10 @@ local function tip(owner, lines)
   end
   GameTooltip:Show()
 end
+
+-- O Config.lua desenha com as mesmas ajudas (e o mesmo skin).
+FU.ui = { text = text, flat = flat, tip = function(...) return tip(...) end, hideTip = hideTip,
+  skin = function(fn, ...) S(fn, ...) end, accent = function() return accent() end }
 
 -- Staff, ou "2 mãos" pra quem usa machado/espada/maça de 2 mãos.
 local function twoHandLabel(ci)
@@ -297,23 +302,21 @@ function FU.build()
   local roleLabel = text(body, "GameFontDisableSmall")
   roleLabel:SetPoint("RIGHT", f.role, "LEFT", -6, 0)
   roleLabel:SetText("Papel:")
-  -- Liga e desliga a linha de upgrade no tooltip dos itens (Tooltip.lua).
-  local tcb = CreateFrame("CheckButton", nil, body, "UICheckButtonTemplate")
-  tcb:SetSize(20, 20)
-  tcb:SetPoint("RIGHT", roleLabel, "LEFT", -112, 0)
-  tcb:SetScript("OnClick", function(self)
-    local d = FU.db()
-    d.tooltipOff = not d.tooltipOff
-    self:SetChecked(not d.tooltipOff)
+  -- Engrenagem: a tela de configurações (Config.lua).
+  local gear = CreateFrame("Button", nil, body)
+  gear:SetSize(20, 20)
+  gear:SetPoint("RIGHT", roleLabel, "LEFT", -12, 0)
+  gear.icon = gear:CreateTexture(nil, "ARTWORK")
+  gear.icon:SetAllPoints()
+  gear.icon:SetTexture("Interface\\Icons\\INV_Misc_Gear_01")
+  flat(gear, 1, 1, 1, 0.15, "HIGHLIGHT")
+  S("SquareIcon", gear.icon, gear)
+  gear:SetScript("OnClick", function() FU.cfg.toggle() end)
+  gear:SetScript("OnEnter", function(self)
+    tip(self, { "Configurações", "Dica no tooltip, botões, varredura, ganho mínimo e os pesos de cada stat." })
   end)
-  tcb:SetScript("OnEnter", function(self)
-    tip(self, { "Dica no tooltip", "No tooltip de qualquer item que tu equipa: se é upgrade, quanto, no lugar de quê e de onde vem." })
-  end)
-  tcb:SetScript("OnLeave", hideTip)
-  f.tipToggle = tcb
-  local tcbLabel = text(body, "GameFontDisableSmall")
-  tcbLabel:SetPoint("LEFT", tcb, "RIGHT", 2, 0)
-  tcbLabel:SetText("Dica no tooltip")
+  gear:SetScript("OnLeave", hideTip)
+  f.gear = gear
   f.info = text(body, "GameFontDisableSmall")
   f.info:SetPoint("TOPLEFT", 12, -34)
   f.info:SetWidth(W - 24)
@@ -598,7 +601,6 @@ function FU.applySkin(f)
   S("Button", f.rescan)
   S("EditBox", f.maxBox, { padInput = true })
   S("Checkbox", f.fitGold)
-  S("Checkbox", f.tipToggle)
   if FU.ahButton then S("Button", FU.ahButton) end
 end
 
@@ -721,7 +723,6 @@ function FU.draw()
   f.levelSeg.Select(db.plus)
   f.levelSeg.buttons[1].label:SetText(ctx and ("Meu lvl (" .. ctx.level .. ")") or "Meu lvl")
   f.fitGold:SetChecked(db.fitGold)
-  f.tipToggle:SetChecked(not db.tooltipOff)
   f.modeSeg.Select(FU.mode())
   f.kindSeg.Select(db.srcKind or "all")
   f.kindSeg.SetShown(srcMode)
@@ -984,6 +985,11 @@ function FU.run(msg)
     ah.start(function() if FU.frame and FU.frame:IsShown() then FU.refresh() end end)
     return
   end
+  -- "/fu config" abre as configurações.
+  if msg == "config" or msg == "opcoes" or msg == "opções" or msg == "options" then
+    FU.cfg.show()
+    return
+  end
   -- "/fu quests" (ou dungeons, fontes) abre no modo Quests e dungeons; "/fu ah", no leilão.
   if msg == "quests" or msg == "quest" or msg == "dungeons" or msg == "fontes" then
     FU.db().mode = "src"
@@ -1004,7 +1010,7 @@ function FU.run(msg)
     return
   end
   FU.show()
-  if canScan then FU.rescan() end
+  if canScan and FU.db().autoScan ~= false then FU.rescan() end
 end
 
 -- Botões no topo do leiloeiro: uma fila só, da direita pra esquerda a partir do X, sem buraco.
@@ -1039,6 +1045,14 @@ function FU.attachAHButton()
   b:SetScript("OnClick", function() FU.run() end)
   S("Button", b)
   FU.ahButton = b
+  b:SetShown(FU.db().ahButton ~= false)
+end
+
+-- Mostra ou esconde os botões de abrir conforme a configuração.
+function FU.applyButtons()
+  local db = FU.db()
+  if FU.charButton then FU.charButton:SetShown(db.charButton ~= false) end
+  if FU.ahButton then FU.ahButton:SetShown(db.ahButton ~= false) end
 end
 
 -- Abre ou fecha a janela no último modo (leilão ou quests e dungeons), sem varrer nada.
@@ -1076,6 +1090,7 @@ function FU.attachCharButton()
   end)
   b:SetScript("OnLeave", hideTip)
   FU.charButton = b
+  b:SetShown(FU.db().charButton ~= false)
 end
 
 SLASH_FINDUPGRADE1 = "/findupgrade"

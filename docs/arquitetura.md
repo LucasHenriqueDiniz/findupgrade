@@ -13,6 +13,7 @@ O addon é a pasta `FindUpgrade/`. O `FindUpgrade.toc` carrega os arquivos nesta
 | `Engine.lua` | A conta: equipado, candidatos por slot, combos de arma, filtros e resultados |
 | `Tooltip.lua` | A linha de upgrade no tooltip dos itens (`FU.tip`): mesma nota da janela, contra a peça que sairia, com a diferença dos stats e de onde vem. Usa o `TooltipDataProcessor`, ou o `OnTooltipSetItem` se o cliente não tiver. Desliga com `FindUpgradeDB.tooltipOff` |
 | `UI.lua` | A janela, os dropdowns, os cliques, o skin, os eventos, o `/findupgrade` e os botões de abrir (leiloeiro, janela do personagem, atalho, menu de addons) |
+| `Config.lua` | A tela de configurações (`FU.cfg`): engrenagem da janela, `/fu config` e uma página em Opções → AddOns. Grava em `FindUpgradeDB`: `tooltipOff`, `tipStats`, `tipSource`, `charButton`, `ahButton`, `autoScan`, `minGain` e `weights[papel][stat]` |
 | `Bindings.xml` | O atalho de teclado (o jogo lê sozinho, não vai no `.toc`) |
 
 ## O caminho dos dados

@@ -137,10 +137,10 @@ function tip.lines(link)
   else
     out[#out + 1] = { "Igual ao que tu usa (" .. e.vs .. ")" .. lvl, 0.7, 0.7, 0.7 }
   end
-  if e.delta ~= "" and math.abs(e.gain) >= 0.5 then out[#out + 1] = { e.delta, 0.75, 0.75, 0.75 } end
+  if e.delta ~= "" and math.abs(e.gain) >= 0.5 and FU.db().tipStats ~= false then out[#out + 1] = { e.delta, 0.75, 0.75, 0.75 } end
   if e.note and e.gain < 0.5 then out[#out + 1] = { e.note, 0.6, 0.6, 0.6 } end
   -- De onde vem, só no upgrade (o que já está na bolsa não precisa).
-  if e.gain >= 0.5 and FU.src and FU.src.forItem then
+  if e.gain >= 0.5 and FU.db().tipSource ~= false and FU.src and FU.src.forItem then
     for _, l in ipairs(FU.src.lines(FU.src.forItem(e.id)) or {}) do out[#out + 1] = { l, 0.6, 0.6, 0.6 } end
   end
   return out

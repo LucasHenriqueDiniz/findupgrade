@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.6.0 · 14/11/2026
+
+- **Tela de configurações.** Abre pela engrenagem no alto da janela, com `/fu config` ou em Opções → AddOns. Tem:
+  - a dica no tooltip, e o que ela mostra (stats, de onde vem);
+  - os botões da janela do personagem e do leiloeiro;
+  - varrer o leilão sozinho ao abrir;
+  - o ganho mínimo;
+  - o **peso de cada stat** do papel de agora, por cima do padrão, com "Voltar ao padrão".
+- A caixinha "Dica no tooltip" saiu do alto da janela e foi pra tela de configurações.
+
 ## 1.5.0 · 14/11/2026
 
 - **Dica no tooltip.** No tooltip de qualquer item que o personagem equipa aparece "Upgrade +X · no lugar de Y", "Pior que Y" ou "Igual". Embaixo, a diferença dos stats que pesam pro papel, o level pedido e, no upgrade, de onde vem. Usa a mesma nota da janela e fica no `Tooltip.lua`.

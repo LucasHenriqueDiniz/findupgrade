@@ -8,7 +8,7 @@ local _, FU = ...
 FU = FU or {}
 FindUpgrade = FU -- global: /dump FindUpgrade.ctx no jogo, e os testes leem
 
-FU.VERSION = "1.5.0"
+FU.VERSION = "1.6.0"
 FU.PLUS = { 0, 3, 5, 10 } -- botões de level: só o meu, até +3, +5, +10
 FU.MAXPLUS = 10
 FU.PER_ITEM = 3 -- no máximo 3 combos com a mesma arma comprada (senão ela enche a lista)
@@ -141,6 +141,15 @@ for _, gr in ipairs(FU.GROUPS) do
   FU.GROUP_BY[gr.key] = gr
   for _, s in ipairs(gr.slots) do FU.GROUP_OF[s] = gr.key end
 end
+
+-- Nome de cada stat (tela de configurações, pesos), na ordem em que aparecem lá.
+FU.STAT_ORDER = { "heal", "dmg", "int", "spi", "mp5", "sta", "str", "agi", "ap", "rap", "crit", "hit", "spellcrit",
+  "spellhit", "dps", "def", "dodge", "parry", "block", "blockValue", "armor" }
+FU.STAT_LABEL = { heal = "Cura", dmg = "Dano mágico", int = "Intelecto", spi = "Espírito", mp5 = "Mana a cada 5s",
+  sta = "Stamina", str = "Força", agi = "Agilidade", ap = "Attack Power", rap = "AP à distância", crit = "1% crítico",
+  hit = "1% acerto", spellcrit = "1% crítico mágico", spellhit = "1% acerto mágico", dps = "1 DPS de arma",
+  def = "Defesa", dodge = "1% esquiva", parry = "1% aparar", block = "1% bloqueio", blockValue = "Valor de bloqueio",
+  armor = "Armadura" }
 
 -- Moedas da caixa de preço máximo.
 FU.UNITS = {

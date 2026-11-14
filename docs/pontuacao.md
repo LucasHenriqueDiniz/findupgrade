@@ -14,6 +14,8 @@ ganho         = nota da peça − nota do que ela substitui
 
 ## Pesos de cada papel
 
+**Dá pra mudar** na tela de configurações (engrenagem → Pesos). O valor que você põe vale por cima do padrão, só no seu personagem e só naquele papel. Peso 0 tira o stat da conta, e "Voltar ao padrão" apaga as mudanças. O ganho mínimo também muda lá.
+
 Ficam em `FU.ROLES`, no `Data.lua`.
 
 | Stat | Cura | Dano mágico | DPS (força) | DPS (agilidade) | Caçador | Tank |
