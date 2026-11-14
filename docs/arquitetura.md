@@ -8,6 +8,7 @@ O addon é a pasta `FindUpgrade/`. O `FindUpgrade.toc` carrega os arquivos nesta
 | `Util.lua` | O que todo mundo usa: escolhas salvas (`FU.db`), preço máximo em cobre, dinheiro em texto, números com vírgula |
 | `Stats.lua` | Os stats de uma peça (`GetItemStats` + tooltip), a nota dela pro papel (`FU.scoreFor`), o item que pede profissão ou reputação (`FU.blocked`), stats e pesos em texto |
 | `Scan.lua` | O equipamento à venda (`FU.ah`): a varredura própria ou a do VaultSync |
+| `Sources.lua` | Recompensa de quest e drop de dungeon (`FU.src`), lidos do banco do GearQuest e do Wishwell. Ver [fontes.md](fontes.md) |
 | `Engine.lua` | A conta: equipado, candidatos por slot, combos de arma, filtros e resultados |
 | `UI.lua` | A janela, os dropdowns, os cliques, o skin, os eventos e o `/findupgrade` |
 
@@ -35,7 +36,7 @@ equipado ──GetInventoryItemLink──▶ FU.context() ◀──────�
 | SavedVariable | Onde | Campos |
 |---|---|---|
 | `FindUpgradeAH` | conta | `["<reino> - <facção>"] = { at, date, total, missing, gear }`. O `gear` é uma string, um item por linha, com link, preço, anúncios, level, slot, classe, subclasse e qualidade separados por tab. Ocupa bem menos que tabela. Reino sem varredura há 14 dias sai no login |
-| `FindUpgradeDB` | personagem | `plus` (level), `maxValue` + `maxUnit` (preço máximo), `fitGold`, `group` (aba), `weaponMode`, `role`, `pos` (posição da janela), `statKeys` (chaves de stat que o cliente usa; `false` = não entendida) e `eq` (o que a janela leu do equipado, pra conferir) |
+| `FindUpgradeDB` | personagem | `mode` (`"ah"` ou `"src"`), `srcKind` (tudo, quest, dungeon), `plus` (level), `maxValue` + `maxUnit` (preço máximo), `fitGold`, `group` (aba), `weaponMode`, `role`, `pos` (posição da janela), `statKeys` (chaves de stat que o cliente usa; `false` = não entendida) e `eq` (o que a janela leu do equipado, pra conferir) |
 
 ## `FU.ah`: de onde vem o AH
 

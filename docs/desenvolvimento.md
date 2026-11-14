@@ -16,6 +16,7 @@ npm test
 | `e2e-priest.cjs` | priest de cura sem o VaultSync: varredura própria, notas, filtros, moeda, combos, cliques, papel, `/reload`, apagar reino velho |
 | `e2e-warrior.cjs` | warrior: 2 mãos × duas armas × arma + escudo, crítico e AP do tooltip, tank, placa no 40 |
 | `e2e-vaultsync.cjs` | com o VaultSync: usa a varredura dele (o contrato do `VaultSyncAPI`) |
+| `e2e-sources.cjs` | Quests e dungeons: o banco do GearQuest e do Wishwell simulados, a facção, a quest feita, o level do item e o filtro de tipo |
 | `harness.cjs` | carrega os arquivos na ordem do `.toc` e roda um teste |
 | `stubs.lua` | a API do WoW simulada: frames, eventos, timers, `C_Item`, `C_TooltipInfo`, `C_AuctionHouse` |
 

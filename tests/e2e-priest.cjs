@@ -46,9 +46,9 @@ SlashCmdList.FINDUPGRADE("")
 assert(has("ainda não tem varredura"), "sem varredura devia avisar")
 assert(not FindUpgradeFrame, "sem varredura não devia abrir janela")
 
--- Leiloeiro aberto: botão Upgrades, e o /findupgrade abre a janela e varre.
+-- Leiloeiro aberto: botão Gear upgrade, e o /findupgrade abre a janela e varre.
 openAH()
-assert(FU.ahButton and FU.ahButton.text == "Upgrades", "botão Upgrades no leiloeiro")
+assert(FU.ahButton and FU.ahButton.text == "Gear upgrade" and VaultAHButtons and VaultAHButtons[1] == FU.ahButton, "botão Gear upgrade no leiloeiro, na fila")
 SlashCmdList.FINDUPGRADE("")
 assert(REPLICATED == 1, "devia varrer o AH")
 local f = FindUpgradeFrame

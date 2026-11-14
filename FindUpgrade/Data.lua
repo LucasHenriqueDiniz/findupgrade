@@ -8,7 +8,7 @@ local _, FU = ...
 FU = FU or {}
 FindUpgrade = FU -- global: /dump FindUpgrade.ctx no jogo, e os testes leem
 
-FU.VERSION = "1.1.0"
+FU.VERSION = "1.2.0"
 FU.PLUS = { 0, 3, 5, 10 } -- botões de level: só o meu, até +3, +5, +10
 FU.MAXPLUS = 10
 FU.PER_ITEM = 3 -- no máximo 3 combos com a mesma arma comprada (senão ela enche a lista)

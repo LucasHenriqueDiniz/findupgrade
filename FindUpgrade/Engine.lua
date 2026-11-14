@@ -6,8 +6,12 @@
 local _, FU = ...
 FU = FU or FindUpgrade
 
--- O equipamento à venda (Scan.lua: o do VaultSync ou a varredura própria).
+-- O que comparar: no modo "ah", o equipamento à venda (Scan.lua: o do VaultSync ou a varredura
+-- própria); no modo "src", recompensa de quest e drop de dungeon (Sources.lua).
+function FU.mode() return FU.db().mode == "src" and "src" or "ah" end
+
 function FU.load()
+  if FU.mode() == "src" then return FU.src.load() end
   local gear, date = FU.ah.load()
   -- Varredura guardada sem slot/classe (VaultSync v47): completa pelo id, que não pede cache.
   for _, g in ipairs(gear or {}) do
@@ -118,6 +122,14 @@ function FU.evaluate(g, ctx, pending)
     pending[#pending + 1] = g
     return
   end
+  -- Item de dungeon do Wishwell: até carregar, o level era o mínimo da dungeon; agora é o do item.
+  if g.levelGuess then
+    local lv = select(5, C_Item.GetItemInfo(g.link))
+    if lv then
+      g.level, g.levelGuess, req = lv, nil, lv
+      if req > ctx.level + FU.MAXPLUS then return end
+    end
+  end
   local kind = FU.weaponKind(g)
   -- A nota depende da mão: o DPS da arma conta inteiro na principal e metade na off-hand.
   local slot = (kind == "oh" and "OffHand") or (kind and "MainHand") or slots[1]
@@ -173,7 +185,8 @@ function FU.compute(done)
     local again = pending
     pending = {}
     for _, g in ipairs(again) do FU.evaluate(g, ctx, pending) end
-    if #pending > 0 and tries < 3 then
+    -- Quest e dungeon trazem centenas de itens que o cliente ainda não viu: espera mais.
+    if #pending > 0 and tries < (FU.mode() == "src" and 8 or 3) then
       C_Timer.After(2, retry)
     else
       finish()
@@ -197,6 +210,10 @@ end
 -- Filtros: level (até o meu + N), preço máximo por peça e, se marcado, o total cabe no gold.
 function FU.filters(ctx)
   local db = FU.db()
+  if FU.mode() == "src" then
+    -- Quest e dungeon não têm preço: só level e o tipo de fonte (quest, dungeon ou tudo).
+    return { maxLevel = ctx.level + (db.plus or 0), weaponMode = db.weaponMode, kind = db.srcKind or "all" }
+  end
   return { maxLevel = ctx.level + (db.plus or 0), maxPiece = FU.maxPiece(), money = db.fitGold and ctx.money or nil,
     weaponMode = db.weaponMode }
 end
@@ -204,6 +221,7 @@ end
 local function pass(c, f)
   if c.kept then return true end
   if c.req > f.maxLevel then return false end
+  if f.kind and f.kind ~= "all" and not (c.g.src and c.g.src.kind == f.kind) then return false end
   if f.maxPiece and c.price > f.maxPiece then return false end
   return true
 end

@@ -264,7 +264,18 @@ function FU.build()
   f.close:SetPoint("TOPRIGHT", 2, 2)
   f.title = text(body, "GameFontNormal")
   f.title:SetPoint("TOPLEFT", 12, -8)
-  f.title:SetText("Upgrades no AH")
+  f.title:SetText("Upgrades")
+  f.modeSeg = segmented(body, {
+    { value = "ah", label = "Leilão", w = 64, tip = { "Leilão", "O que está à venda no AH agora." } },
+    { value = "src", label = "Quests e dungeons", w = 124,
+      tip = { "Quests e dungeons", "Recompensa de quest, drop de boss de dungeon, rare e vendedor.",
+        "Lê o banco do GearQuest Forever e/ou do Wishwell Forever (precisa de um deles instalado)." } },
+  }, function(v)
+    FU.db().mode = v
+    FU.offset = 0
+    FU.show()
+  end)
+  f.modeSeg.buttons[1]:SetPoint("LEFT", f.title, "RIGHT", 12, 0)
   f.role = dropdown(body, 128, 150, function()
     local ctx, out = FU.ctx, {}
     local _, cls = UnitClass("player")
@@ -367,6 +378,18 @@ function FU.build()
   local cbLabel = text(body)
   cbLabel:SetPoint("LEFT", cb, "RIGHT", 2, 0)
   cbLabel:SetText("Só o que cabe no meu gold")
+  f.priceBits = { maxLabel, eb, f.unit, cb, cbLabel }
+  -- No modo Quests e dungeons, no lugar do preço: que tipo de fonte mostrar.
+  f.kindSeg = segmented(body, {
+    { value = "all", label = "Tudo", w = 50 },
+    { value = "quest", label = "Quests", w = 60, tip = { "Só recompensa de quest", "As que tu já fez somem (com o Wishwell instalado)." } },
+    { value = "dungeon", label = "Dungeons", w = 74, tip = { "Só drop de boss de dungeon", "Com o Wishwell, mostra a % de drop." } },
+  }, function(v)
+    FU.db().srcKind = v
+    FU.offset = 0
+    FU.refresh()
+  end)
+  f.kindSeg.buttons[1]:SetPoint("LEFT", f.levelSeg.buttons[4], "RIGHT", 22, 0)
 
   local line = body:CreateTexture(nil, "ARTWORK")
   line:SetPoint("TOPLEFT", 10, -80)
@@ -599,8 +622,13 @@ local function drawRow(row, r, ctx, overview)
   row.name:SetText(FU.rowName(r, ctx))
   row.stats:SetText(FU.statText(r.s) .. (r.breaksSet and " |cffff8040set|r" or ""))
   row.gain:SetText("|cff40ff40+" .. FU.num(r.gain) .. "|r")
-  local over = ctx and r.price > ctx.money
-  row.price:SetText((over and "|cffff5050" or "") .. FU.coins(r.price) .. (over and "|r" or ""))
+  local src = r.parts[1] and (r.parts[1].kept and r.parts[2] or r.parts[1]).g.src
+  if src then
+    row.price:SetText("|cffffd200" .. FU.src.short(src) .. "|r")
+  else
+    local over = ctx and r.price > ctx.money
+    row.price:SetText((over and "|cffff5050" or "") .. FU.coins(r.price) .. (over and "|r" or ""))
+  end
 end
 
 -- Texto em cima da lista: o que está equipado no slot (ou o resumo do "Tudo").
@@ -615,7 +643,7 @@ local function subHeader(f, ctx, res, key)
       s = "Nada que seja upgrade com esses filtros."
     else
       local over = price > ctx.money
-      s = string.format("O melhor de cada slot · comprando tudo: |cff40ff40+%s|r por %s%s%s", FU.num(gain),
+      s = FU.mode() == "src" and string.format("O melhor de cada slot · pegando tudo: |cff40ff40+%s|r", FU.num(gain)) or string.format("O melhor de cada slot · comprando tudo: |cff40ff40+%s|r por %s%s%s", FU.num(gain),
         over and "|cffff5050" or "", FU.coins(price), over and "|r" or "")
     end
   elseif key == "weapon" then
@@ -647,11 +675,18 @@ function FU.draw()
   local ctx, res = FU.ctx, FU.res
   local ah = FU.ah
 
+  local srcMode = FU.mode() == "src"
   local info
-  if FU.noData then
+  if FU.noData and srcMode then
+    info = "|cffff8040Pra quests e dungeons, instala o GearQuest Forever ou o Wishwell Forever: o FindUpgrade lê o banco deles.|r"
+  elseif FU.noData then
     info = "Ainda não tem varredura do AH. Abre o leiloeiro e clica em Varrer o AH (1 a cada 15 min)."
   elseif not ctx then
     info = "Calculando..."
+  elseif srcMode then
+    info = string.format("Quests e dungeons: banco do %s · %d itens · lvl %d", table.concat(FU.src.available(), " + "),
+      ctx.total or 0, ctx.level)
+    if (ctx.pending or 0) > 0 then info = info .. string.format(" · %d ainda sem dados (abre de novo daqui a pouco)", ctx.pending) end
   else
     info = string.format("Varredura de %s · %d peças · teu gold %s · lvl %d", scanWhen(), ctx.total or 0,
       FU.coins(ctx.money), ctx.level)
@@ -668,6 +703,10 @@ function FU.draw()
   f.levelSeg.Select(db.plus)
   f.levelSeg.buttons[1].label:SetText(ctx and ("Meu lvl (" .. ctx.level .. ")") or "Meu lvl")
   f.fitGold:SetChecked(db.fitGold)
+  f.modeSeg.Select(FU.mode())
+  f.kindSeg.Select(db.srcKind or "all")
+  f.kindSeg.SetShown(srcMode)
+  for _, w in ipairs(f.priceBits) do w:SetShown(not srcMode) end
   local unit = FU.UNIT_BY[db.maxUnit] or FU.UNIT_BY.g
   f.unit.Set(nil, unit.icon)
   do
@@ -722,7 +761,9 @@ function FU.draw()
   f.scrollText:SetText(#list > NROWS and string.format("%d–%d de %d", FU.offset + 1, math.min(#list, FU.offset + NROWS), #list) or "")
 
   local status, canScan
-  if ah.scanning() then
+  if srcMode then
+    status = "Não precisa do leiloeiro: vem do banco do " .. table.concat(FU.src.available(), " e do ") .. "."
+  elseif ah.scanning() then
     status = "|cff88ccff" .. (ah.status() or "Varrendo o AH") .. ": a lista atualiza sozinha quando acabar.|r"
   elseif not ah.isOpen() then
     status = "Abre o leiloeiro pra varrer de novo."
@@ -790,6 +831,9 @@ function FU.tipPart(owner, r, k)
   GameTooltip:AddLine(" ")
   if c.kept then
     GameTooltip:AddLine("Já é teu: fica no combo.", 0.7, 0.7, 0.7)
+  elseif c.g.src then
+    for i, l in ipairs(FU.src.lines(c.g.src)) do GameTooltip:AddLine(l, i == 1 and 1 or 0.8, i == 1 and 0.82 or 0.8, i == 1 and 0 or 0.8, true) end
+    GameTooltip:AddLine("Clique: escreve no chat de onde vem · Shift-clique: link", 0.6, 0.6, 0.6)
   else
     local n = c.g.n or 1
     GameTooltip:AddLine(string.format("%s · %d anúncio%s", FU.coins(c.price), n, n == 1 and "" or "s"), 1, 1, 1)
@@ -817,11 +861,21 @@ function FU.tipRow(owner, r)
       GameTooltip:AddLine("Cada peça contra o que tu tem: " .. table.concat(bits, " · "), 0.7, 0.9, 0.7, true)
     end
   end
+  for _, k in ipairs(idx) do
+    for i, l in ipairs(FU.src.lines(r.parts[k].g.src)) do
+      GameTooltip:AddLine(l, i == 1 and 1 or 0.8, i == 1 and 0.82 or 0.8, i == 1 and 0 or 0.8, true)
+    end
+  end
   GameTooltip:AddLine("Troca: " .. r.replaces .. (r.breaksSet and " |cffff8040(quebra o set)|r" or ""), 1, 0.82, 0, true)
-  GameTooltip:AddLine(string.format("Ganho +%s · %d anúncio%s", FU.num(r.gain), c.g.n or 1, (c.g.n or 1) == 1 and "" or "s"),
-    0.7, 0.7, 0.7)
-  GameTooltip:AddLine(#idx > 1 and "Clique busca a 1ª peça, o 2º clique a outra. Ou clica no ícone de cada uma."
-    or "Clique: busca no AH · Shift-clique: link no chat", 0.6, 0.6, 0.6, true)
+  if c.g.src then
+    GameTooltip:AddLine("Ganho +" .. FU.num(r.gain), 0.7, 0.7, 0.7)
+    GameTooltip:AddLine("Clique: escreve no chat de onde vem · Shift-clique: link", 0.6, 0.6, 0.6, true)
+  else
+    GameTooltip:AddLine(string.format("Ganho +%s · %d anúncio%s", FU.num(r.gain), c.g.n or 1, (c.g.n or 1) == 1 and "" or "s"),
+      0.7, 0.7, 0.7)
+    GameTooltip:AddLine(#idx > 1 and "Clique busca a 1ª peça, o 2º clique a outra. Ou clica no ícone de cada uma."
+      or "Clique: busca no AH · Shift-clique: link no chat", 0.6, 0.6, 0.6, true)
+  end
   GameTooltip:Show()
 end
 
@@ -852,9 +906,16 @@ local function linkToChat(c)
   end
 end
 
+-- Item de quest ou dungeon: escreve no chat de onde vem e como pegar.
+function FU.tellSource(c)
+  local lines = FU.src.lines(c.g.src)
+  say((c.g.name or "?") .. ": " .. table.concat(lines, " — "))
+end
+
 function FU.clickPart(r, k)
   local c = r and r.parts[k]
   if not c or linkToChat(c) or c.kept then return end
+  if c.g.src then return FU.tellSource(c) end
   FU.search(c)
 end
 
@@ -867,6 +928,10 @@ function FU.click(r)
   if #idx > 1 and r.nextPart then k = idx[2] end
   local c = r.parts[k]
   if linkToChat(c) then return end
+  if c.g.src then
+    for _, i in ipairs(idx) do FU.tellSource(r.parts[i]) end
+    return
+  end
   if FU.search(c) and #idx > 1 then
     r.nextPart = not r.nextPart
     if r.nextPart then say("clica de novo na linha pra buscar " .. (r.parts[idx[2]].g.name or "a outra peça") .. ".") end
@@ -888,7 +953,7 @@ end
 
 -- A varredura terminou (do botão, do VaultSync ou do Auctionator): recalcula se aberta.
 function FU.gearChanged()
-  if FU.frame and FU.frame:IsShown() then FU.show() end
+  if FU.mode() == "ah" and FU.frame and FU.frame:IsShown() then FU.show() end
 end
 
 -- /findupgrade: abre com a última varredura; com o leiloeiro aberto e a varredura liberada,
@@ -900,6 +965,20 @@ function FU.run(msg)
     ah.start(function() if FU.frame and FU.frame:IsShown() then FU.refresh() end end)
     return
   end
+  -- "/fu quests" (ou dungeons, fontes) abre no modo Quests e dungeons; "/fu ah", no leilão.
+  if msg == "quests" or msg == "quest" or msg == "dungeons" or msg == "fontes" then
+    FU.db().mode = "src"
+  elseif msg == "ah" or msg == "leilao" then
+    FU.db().mode = "ah"
+  end
+  if FU.mode() == "src" then
+    if not FU.load() then
+      say("pra quests e dungeons, instala o GearQuest Forever ou o Wishwell Forever: o FindUpgrade lê o banco deles.")
+      return
+    end
+    FU.show()
+    return
+  end
   local canScan = ah.isOpen() and not ah.scanning() and ah.wait() == 0
   if not canScan and not FU.load() then
     say("ainda não tem varredura do AH. Abre o leiloeiro e digita /findupgrade.")
@@ -909,13 +988,34 @@ function FU.run(msg)
   if canScan then FU.rescan() end
 end
 
+-- Botões no topo do leiloeiro: uma fila só, da direita pra esquerda a partir do X, sem buraco.
+-- A lista é global (VaultAHButtons) e o Profissões ("Lucro de craft") faz a mesma conta;
+-- ahOrder diz a ordem (1 = mais à direita). Sozinho, o botão fica colado no X.
+local function placeAHButton(b, order)
+  local bar = _G.VaultAHButtons or {}
+  _G.VaultAHButtons = bar
+  b.ahOrder = order
+  bar[#bar + 1] = b
+  table.sort(bar, function(x, y) return (x.ahOrder or 9) < (y.ahOrder or 9) end)
+  local prev
+  for _, x in ipairs(bar) do
+    x:ClearAllPoints()
+    if prev then
+      x:SetPoint("RIGHT", prev, "LEFT", -4, 0)
+    else
+      x:SetPoint("TOPRIGHT", _G.AuctionHouseFrame, "TOPRIGHT", -30, -2)
+    end
+    prev = x
+  end
+end
+
 function FU.attachAHButton()
   local ahf = _G.AuctionHouseFrame
   if not ahf or FU.ahButton then return end
   local b = CreateFrame("Button", nil, ahf, "UIPanelButtonTemplate")
-  b:SetSize(76, 20)
-  b:SetText("Upgrades")
-  b:SetPoint("TOPRIGHT", ahf, "TOPRIGHT", -166, -2)
+  b:SetSize(96, 20)
+  b:SetText("Gear upgrade")
+  placeAHButton(b, 2)
   b:SetFrameStrata("HIGH")
   b:SetScript("OnClick", function() FU.run() end)
   S("Button", b)

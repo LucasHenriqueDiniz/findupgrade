@@ -1,9 +1,9 @@
 ## Interface: 16001
 ## Title: FindUpgrade
-## Notes: Upgrades de equipamento à venda no AH, por slot, com o papel da classe (cura, DPS, tank), filtro de level e de preço e combos de arma. /findupgrade
+## Notes: Upgrades de equipamento: o que está à venda no AH e o que vem de quest e dungeon (com o GearQuest ou o Wishwell), pelo papel da classe. /findupgrade
 ## Author: LucasHenriqueDiniz
-## Version: 1.1.0
-## OptionalDeps: VaultSync, EllesmereUI, ElvUI
+## Version: 1.2.0
+## OptionalDeps: VaultSync, GearQuestForever, Wishwell, EllesmereUI, ElvUI
 ## SavedVariables: FindUpgradeAH
 ## SavedVariablesPerCharacter: FindUpgradeDB
 ## X-Website: https://github.com/LucasHenriqueDiniz/findupgrade
@@ -12,5 +12,6 @@ Data.lua
 Util.lua
 Stats.lua
 Scan.lua
+Sources.lua
 Engine.lua
 UI.lua

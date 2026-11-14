@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.0 · 14/11/2026
+
+- **Quests e dungeons.** Um modo novo, no alto da janela ou com `/fu quests`, mostra recompensa de quest, drop de boss com a % de drop, rare e vendedor. Lê, dentro do jogo, o banco do GearQuest Forever e/ou do Wishwell Forever, quando estão instalados; não copia nada. Tira a recompensa da outra facção e a quest já feita. Ver `docs/fontes.md`.
+- O botão no leiloeiro agora se chama **Gear upgrade** e entra na fila de botões do topo (`VaultAHButtons`).
+
 ## 1.1.0 · 13/11/2026
 
 - **Repo próprio.** O código foi dividido em `Data`, `Util`, `Stats`, `Scan`, `Engine` e `UI`, com documentação e testes.
