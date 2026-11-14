@@ -6,6 +6,7 @@ const { run } = require('./harness.cjs');
 
 const setup = String.raw`
 CLASS, LEVEL, MONEY = "PRIEST", 15, 5000
+CharacterFrame = CreateFrame("Frame")
 ITEMS = {
   [4314] = { "Double-Stitched Woolen Shoulders", "INVTYPE_SHOULDER", 4, 1, 12, { ITEM_MOD_STAMINA_SHORT = 4, ITEM_MOD_SPELL_HEALING_DONE_SHORT = 4 } },
   [2042] = { "Staff of Westfall", "INVTYPE_2HWEAPON", 2, 10, 13, {}, { "Staff of Westfall", "+5 Intellect", "+6 Spirit", "+48 Spell Healing" } },
@@ -92,6 +93,14 @@ f.kindSeg.buttons[2].scripts.OnClick(f.kindSeg.buttons[2])
 assert(#FU.res.Wrist == 1 and #FU.res.Chest == 0 and #FU.res.Feet == 0 and #FU.res.weapon == 0, "só quests")
 f.kindSeg.buttons[3].scripts.OnClick(f.kindSeg.buttons[3])
 assert(#FU.res.Wrist == 0 and #FU.res.Chest == 1 and #FU.res.weapon == 1, "só dungeons")
+-- Botão na janela do personagem: fecha e abre a janela (no último modo).
+local cb = FU.charButton
+assert(cb and FindUpgrade_Toggle and BINDING_NAME_FINDUPGRADE_TOGGLE, "botão na janela do personagem, atalho e menu de addons")
+cb.scripts.OnClick(cb)
+assert(not f.shown, "o botão fecha a janela")
+cb.scripts.OnClick(cb)
+runTimers()
+assert(f.shown and FindUpgradeDB.mode == "src", "e abre de novo no modo Quests e dungeons")
 -- Volta pro leilão: preço aparece de novo e o modo fica salvo.
 f.modeSeg.buttons[1].scripts.OnClick(f.modeSeg.buttons[1])
 assert(FindUpgradeDB.mode == "ah" and f.maxBox.shown and not f.kindSeg.buttons[1].shown, "modo leilão")

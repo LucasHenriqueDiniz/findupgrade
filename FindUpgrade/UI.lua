@@ -1022,6 +1022,43 @@ function FU.attachAHButton()
   FU.ahButton = b
 end
 
+-- Abre ou fecha a janela no último modo (leilão ou quests e dungeons), sem varrer nada.
+function FU.toggle()
+  if FU.frame and FU.frame:IsShown() then
+    FU.frame:Hide()
+    return
+  end
+  FU.show()
+end
+-- Global pro atalho de teclado (Bindings.xml) e pro menu de addons do minimapa (.toc).
+FindUpgrade_Toggle = function() FU.toggle() end
+BINDING_HEADER_FINDUPGRADE = "FindUpgrade"
+BINDING_NAME_FINDUPGRADE_TOGGLE = "Abrir/fechar a janela de upgrades"
+
+-- Botão na janela do personagem (tecla C): uma aba colada na borda direita, por fora, pra não
+-- cobrir nada do que a janela (ou o skin do EllesmereUI) desenha dentro. Abre e fecha a janela.
+local CHAR_ICON = "Interface\\Icons\\Spell_ChargePositive"
+function FU.attachCharButton()
+  local cf = _G.CharacterFrame
+  if not cf or FU.charButton then return end
+  local b = CreateFrame("Button", "FindUpgradeCharButton", cf)
+  b:SetSize(34, 34)
+  b:SetPoint("TOPLEFT", cf, "TOPRIGHT", 2, -64)
+  flat(b, 0.05, 0.05, 0.07, 0.92)
+  b.icon = b:CreateTexture(nil, "ARTWORK")
+  b.icon:SetPoint("TOPLEFT", 3, -3)
+  b.icon:SetPoint("BOTTOMRIGHT", -3, 3)
+  b.icon:SetTexture(CHAR_ICON)
+  flat(b, 1, 1, 1, 0.15, "HIGHLIGHT")
+  S("SquareIcon", b.icon, b)
+  b:SetScript("OnClick", function() FU.toggle() end)
+  b:SetScript("OnEnter", function(self)
+    tip(self, { "Upgrades", "O que vale a pena no leilão, em quests e em dungeons, pro teu papel.", "Clique abre e fecha." })
+  end)
+  b:SetScript("OnLeave", hideTip)
+  FU.charButton = b
+end
+
 SLASH_FINDUPGRADE1 = "/findupgrade"
 SLASH_FINDUPGRADE2 = "/fu"
 SlashCmdList.FINDUPGRADE = function(msg) FU.run(msg) end
@@ -1047,13 +1084,17 @@ if EllesmereUI and EllesmereUI.RegisterSkin then
 end
 
 local ev = CreateFrame("Frame")
-for _, e in ipairs({ "ADDON_LOADED", "AUCTION_HOUSE_SHOW", "AUCTION_HOUSE_CLOSED", "PLAYER_MONEY",
+for _, e in ipairs({ "ADDON_LOADED", "PLAYER_LOGIN", "AUCTION_HOUSE_SHOW", "AUCTION_HOUSE_CLOSED", "PLAYER_MONEY",
   "PLAYER_EQUIPMENT_CHANGED", "PLAYER_LEVEL_UP" }) do
   pcall(ev.RegisterEvent, ev, e)
 end
 ev:SetScript("OnEvent", function(_, event, arg1)
   if event == "ADDON_LOADED" then
     if arg1 == ADDON then FU.db() end
+    return
+  end
+  if event == "PLAYER_LOGIN" then
+    pcall(FU.attachCharButton)
     return
   end
   if event == "AUCTION_HOUSE_SHOW" then pcall(FU.attachAHButton) end

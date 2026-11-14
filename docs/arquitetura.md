@@ -10,7 +10,8 @@ O addon é a pasta `FindUpgrade/`. O `FindUpgrade.toc` carrega os arquivos nesta
 | `Scan.lua` | O equipamento à venda (`FU.ah`): a varredura própria ou a do VaultSync |
 | `Sources.lua` | Recompensa de quest e drop de dungeon (`FU.src`), lidos do banco do GearQuest e do Wishwell. Ver [fontes.md](fontes.md) |
 | `Engine.lua` | A conta: equipado, candidatos por slot, combos de arma, filtros e resultados |
-| `UI.lua` | A janela, os dropdowns, os cliques, o skin, os eventos e o `/findupgrade` |
+| `UI.lua` | A janela, os dropdowns, os cliques, o skin, os eventos, o `/findupgrade` e os botões de abrir (leiloeiro, janela do personagem, atalho, menu de addons) |
+| `Bindings.xml` | O atalho de teclado (o jogo lê sozinho, não vai no `.toc`) |
 
 ## O caminho dos dados
 

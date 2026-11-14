@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0 · 14/11/2026
+
+- **Botão na janela do personagem.** É uma aba verde na borda direita (tecla C) que abre e fecha a janela no último modo, sem precisar do leiloeiro.
+- **Atalho de teclado:** Opções → Atalhos → FindUpgrade (arquivo `Bindings.xml`).
+- **Menu de addons do minimapa**, no cliente que tiver (`AddonCompartmentFunc` no `.toc`).
+
 ## 1.2.0 · 14/11/2026
 
 - **Quests e dungeons.** Um modo novo, no alto da janela ou com `/fu quests`, mostra recompensa de quest, drop de boss com a % de drop, rare e vendedor. Lê, dentro do jogo, o banco do GearQuest Forever e/ou do Wishwell Forever, quando estão instalados; não copia nada. Tira a recompensa da outra facção e a quest já feita. Ver `docs/fontes.md`.

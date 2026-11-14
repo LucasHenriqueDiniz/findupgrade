@@ -1,0 +1,6 @@
+<Bindings>
+  <!-- Atalho de teclado: Opções > Atalhos > FindUpgrade (o jogo lê este arquivo sozinho). -->
+  <Binding name="FINDUPGRADE_TOGGLE" header="FINDUPGRADE" category="ADDONS">
+    FindUpgrade_Toggle()
+  </Binding>
+</Bindings>

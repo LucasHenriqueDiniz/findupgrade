@@ -21,7 +21,7 @@ Addon de **WoW Forever** que procura **upgrade de equipamento**: o que está **�
 
 ## Usar
 
-1. Abra o leiloeiro e clique em **Gear upgrade** no canto de cima, ou digite `/findupgrade` (ou `/fu`). No alto da janela, troque entre **Leilão** e **Quests e dungeons** (`/fu quests` abre direto no segundo, sem precisar do leiloeiro).
+1. Abra pelo **botão verde na borda direita da janela do personagem** (tecla C), pelo botão **Gear upgrade** no leiloeiro, por um atalho de teclado (Opções → Atalhos → FindUpgrade), pelo menu de addons do minimapa (se o seu cliente tiver), ou digitando `/findupgrade` (ou `/fu`). No alto da janela, troque entre **Leilão** e **Quests e dungeons** (`/fu quests` abre direto no segundo, sem precisar do leiloeiro).
 2. Na primeira vez ele varre o AH inteiro. Isso leva de 1 a 2 minutos, e a janela se atualiza sozinha quando acaba.
 3. **Esquerda:** os slots, com o maior ganho de cada um. **Tudo** mostra o melhor de cada slot e quanto dá comprando tudo junto.
 4. **Direita:** as opções do slot. Clique numa linha para buscar no AH. Num combo de arma, o 1º clique busca a arma e o 2º a secundária, ou clique no ícone de cada peça.
