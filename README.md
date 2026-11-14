@@ -8,7 +8,7 @@ Addon de **WoW Forever** que procura **upgrade de equipamento**: o que está **�
 - **Armas em combo.** Compara arma de 2 mãos com 1 mão + secundária (escudo, livro ou outra arma). Usa a peça que você já tem quando ela ainda vale.
 - **Tem filtros:** level (só o seu, até +3, +5 ou +10), **preço máximo por peça** (em ouro, prata ou cobre) e "só o que cabe no meu gold".
 - **Busca no AH com um clique.** Shift+clique põe o link no chat.
-- **Quests e dungeons:** recompensa de quest, drop de dungeon (com o boss e a % de drop), vendedor e intendente de reputação. O banco vem junto com o addon, não precisa de nenhum outro. Esconde a quest que você já fez e o que é da outra facção. Ver [docs/fontes.md](docs/fontes.md).
+- **Quests, Dungeons e Vendedores:** um botão pra cada no alto da janela. Mostra recompensa de quest, drop de dungeon (com o boss e a % de drop) e vendedor ou intendente de reputação. O banco vem junto com o addon, não precisa de nenhum outro. Esconde a quest que você já fez e o que é da outra facção. Ver [docs/fontes.md](docs/fontes.md).
 - **Dica no tooltip:** no tooltip de qualquer item que você equipa (bolsa, loot, vendedor, recompensa de quest, link no chat) aparece se é upgrade, quanto, no lugar de quê, o que muda nos stats e de onde ele vem.
 - **Configurações** (engrenagem no alto da janela, `/fu config` ou Opções → AddOns): dica no tooltip, botões de abrir, varrer sozinho, ganho mínimo e o **peso de cada stat** do seu papel, com "voltar ao padrão".
 
@@ -23,7 +23,7 @@ Addon de **WoW Forever** que procura **upgrade de equipamento**: o que está **�
 
 ## Usar
 
-1. Abra pelo **botão verde na borda direita da janela do personagem** (tecla C), pelo botão **Gear upgrade** no leiloeiro, por um atalho de teclado (Opções → Atalhos → FindUpgrade), pelo menu de addons do minimapa (se o seu cliente tiver), ou digitando `/findupgrade` (ou `/fu`). No alto da janela, troque entre **Leilão** e **Quests e dungeons** (`/fu quests` abre direto no segundo, sem precisar do leiloeiro).
+1. Abra pelo **botão verde na borda direita da janela do personagem** (tecla C), pelo botão **Gear upgrade** no leiloeiro, por um atalho de teclado (Opções → Atalhos → FindUpgrade), pelo menu de addons do minimapa (se o seu cliente tiver), ou digitando `/findupgrade` (ou `/fu`). No alto da janela, troque entre **Leilão**, **Quests**, **Dungeons** e **Vendedores**. Os três últimos não precisam do leiloeiro: `/fu quests`, `/fu dungeons` e `/fu vendedores` abrem direto.
 2. Na primeira vez ele varre o AH inteiro. Isso leva de 1 a 2 minutos, e a janela se atualiza sozinha quando acaba.
 3. **Esquerda:** os slots, com o maior ganho de cada um. **Tudo** mostra o melhor de cada slot e quanto dá comprando tudo junto.
 4. **Direita:** as opções do slot. Clique numa linha para buscar no AH. Num combo de arma, o 1º clique busca a arma e o 2º a secundária, ou clique no ícone de cada peça.
@@ -69,7 +69,7 @@ Os atributos vêm do `GetItemStats`, que funciona em qualquer idioma. Mas parte 
 
 - [docs/arquitetura.md](docs/arquitetura.md): como o código está dividido, o caminho dos dados e o que fica salvo.
 - [docs/pontuacao.md](docs/pontuacao.md): pesos de cada papel, combos de arma, filtros e o que não é levado em conta.
-- [docs/fontes.md](docs/fontes.md): o modo Quests e dungeons e o banco de fontes que vem junto.
+- [docs/fontes.md](docs/fontes.md): Quests, Dungeons e Vendedores, e o banco de fontes que vem junto.
 - [docs/classes.md](docs/classes.md): armadura, armas e papéis de cada classe, e como mudar.
 - [docs/idioma.md](docs/idioma.md): o que depende do idioma do cliente.
 - [docs/desenvolvimento.md](docs/desenvolvimento.md): testes fora do jogo e como contribuir.

@@ -9,7 +9,7 @@ O addon é a pasta `FindUpgrade/`. O `FindUpgrade.toc` carrega os arquivos nesta
 | `Stats.lua` | Os stats de uma peça (`GetItemStats` + tooltip), a nota dela pro papel (`FU.scoreFor`), o item que pede profissão ou reputação (`FU.blocked`), stats e pesos em texto |
 | `Scan.lua` | O equipamento à venda (`FU.ah`): a varredura própria ou a do VaultSync |
 | `SourcesData.lua` | O banco de fontes (`FU.SOURCES`): de onde vem cada item fora do leilão. Gerado por `tools/build-sources.mjs`; não edite à mão |
-| `Sources.lua` | Lê o banco de fontes pro modo Quests e dungeons (`FU.src`). Ver [fontes.md](fontes.md) |
+| `Sources.lua` | Lê o banco de fontes pros botões Quests, Dungeons e Vendedores (`FU.src`). Ver [fontes.md](fontes.md) |
 | `Engine.lua` | A conta: equipado, candidatos por slot, combos de arma, filtros e resultados |
 | `Tooltip.lua` | A linha de upgrade no tooltip dos itens (`FU.tip`): mesma nota da janela, contra a peça que sairia, com a diferença dos stats e de onde vem. Usa o `TooltipDataProcessor`, ou o `OnTooltipSetItem` se o cliente não tiver. Desliga com `FindUpgradeDB.tooltipOff` |
 | `UI.lua` | A janela, os dropdowns, os cliques, o skin, os eventos, o `/findupgrade` e os botões de abrir (leiloeiro, janela do personagem, atalho, menu de addons) |
@@ -33,14 +33,16 @@ equipado ──GetInventoryItemLink──▶ FU.context() ◀──────�
 1. **Varredura.** O `FU.ah.start()` chama `C_AuctionHouse.ReplicateItems`. Quando chega o `REPLICATE_ITEM_LIST_UPDATE`, lê os anúncios em pedaços de 4000 por frame, pra não travar o jogo. Guarda só o que a classe usa: um anúncio por item+sufixo, com o menor preço. Item que ainda não está em cache vem sem link. O addon pede os dados e relê até 4 vezes.
 2. **Contexto.** O `FU.context()` lê a classe, o papel, o level, o gold e cada peça equipada, com a nota de cada uma. Logo depois do `/reload`, a peça equipada pode vir sem dados (nome vazio). O `compute` espera até cerca de 3 segundos.
 3. **Candidatos.** Cada peça à venda que a classe usa e que pede até o level + 10 vira candidata. No slot normal, só entra se ganha do equipado por pelo menos o mínimo do papel. Arma entra sempre, porque é nos combos que se decide.
-4. **Resultados.** O `FU.results()` aplica os filtros (level, preço por peça, gold) e monta os combos de arma. Mexer em filtro não recalcula as notas, só refaz essa parte.
+4. **Conta guardada.** A conta fica em `FU.ctxBy[família]`: `ah` pro leilão, `src` pra Quests, Dungeons e Vendedores. Trocar de botão reaproveita a conta. Ela é jogada fora quando muda o que entra nela: peça, level, papel, pesos, varredura nova ou quest entregue (`FU.invalidate`).
+5. **Sem travar.** A conta roda em fatias de no máximo 8 ms por frame (`debugprofilestop`). Começar outra (`FU.gen`) faz a anterior parar no meio. `/fu debug` mostra quanto a última levou.
+6. **Resultados.** O `FU.results()` aplica os filtros (level, preço por peça, gold) e monta os combos de arma. Mexer em filtro não recalcula as notas, só refaz essa parte.
 
 ## O que fica salvo
 
 | SavedVariable | Onde | Campos |
 |---|---|---|
 | `FindUpgradeAH` | conta | `["<reino> - <facção>"] = { at, date, total, missing, gear }`. O `gear` é uma string, um item por linha, com link, preço, anúncios, level, slot, classe, subclasse e qualidade separados por tab. Ocupa bem menos que tabela. Reino sem varredura há 14 dias sai no login |
-| `FindUpgradeDB` | personagem | `mode` (`"ah"` ou `"src"`), `srcKind` (tudo, quest, dungeon), `plus` (level), `maxValue` + `maxUnit` (preço máximo), `fitGold`, `group` (aba), `weaponMode`, `role`, `pos` (posição da janela), `statKeys` (chaves de stat que o cliente usa; `false` = não entendida) e `eq` (o que a janela leu do equipado, pra conferir) |
+| `FindUpgradeDB` | personagem | `mode` (o botão: `"ah"`, `"quest"`, `"dungeon"` ou `"vendor"`), `plus` (level), `maxValue` + `maxUnit` (preço máximo), `fitGold`, `group` (aba), `weaponMode`, `role`, `pos` (posição da janela), `statKeys` (chaves de stat que o cliente usa; `false` = não entendida) e `eq` (o que a janela leu do equipado, pra conferir) |
 
 ## `FU.ah`: de onde vem o AH
 

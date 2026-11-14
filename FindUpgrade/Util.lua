@@ -15,6 +15,8 @@ function FU.db()
   if db.weaponMode == nil then db.weaponMode = "all" end
   if db.fitGold == nil then db.fitGold = false end
   if db.maxUnit == nil then db.maxUnit = "g" end
+  -- Até a 1.6 era um modo só ("src") com o filtro de tipo em srcKind; agora cada tipo é um modo.
+  if db.mode == "src" then db.mode = (db.srcKind == "dungeon" and "dungeon") or "quest" end
   return db
 end
 

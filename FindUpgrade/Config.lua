@@ -18,7 +18,12 @@ local function db() return FU.db() end
 local function changed(recompute)
   if FU.tip and FU.tip.reset then FU.tip.reset() end
   if FU.frame and FU.frame:IsShown() then
-    if recompute then FU.show() else FU.refresh() end
+    if recompute then
+      FU.invalidate()
+      FU.show()
+    else
+      FU.refresh()
+    end
   end
 end
 

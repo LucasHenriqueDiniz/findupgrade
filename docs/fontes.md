@@ -1,12 +1,12 @@
-# Quests e dungeons (banco de fontes)
+# Quests, Dungeons e Vendedores (banco de fontes)
 
-O modo **Quests e dungeons** mostra upgrades que não estão no leilão:
+Os botões **Quests**, **Dungeons** e **Vendedores** mostram upgrades que não estão no leilão:
 - recompensa de quest;
 - drop de dungeon, com o boss e a % de drop quando o banco tem;
 - vendedor;
 - intendente de reputação.
 
-Ele abre pelo botão no alto da janela ou com `/fu quests`, e não precisa do leiloeiro.
+Eles abrem pelos botões no alto da janela ou com `/fu quests`, `/fu dungeons` e `/fu vendedores`, e não precisam do leiloeiro. Os três dividem a mesma conta: trocar entre eles é na hora.
 
 O jogo não tem essa lista, então ela vem num **banco que já vem junto com o addon**: `FindUpgrade/SourcesData.lua`, carregado em `FU.SOURCES`. Não precisa de nenhum outro addon instalado.
 
@@ -47,7 +47,7 @@ node tools/build-sources.mjs
   - a peça da outra facção;
   - o vendedor ou intendente da outra facção;
   - a recompensa de quest que você já fez (`C_QuestLog.IsQuestFlaggedCompleted`).
-- **Item com mais de uma fonte:** a coluna mostra a melhor, nesta ordem: quest ainda não feita, dungeon (a de maior %), vendedor, reputação. O filtro Quests/Dungeons olha todas.
+- **Item com mais de uma fonte** aparece em cada botão que vale pra ele (uma quest que também dropa em dungeon está em Quests e em Dungeons). A coluna mostra a melhor fonte, nesta ordem: quest ainda não feita, dungeon (a de maior %), vendedor, reputação. Vendedores junta vendedor e intendente de reputação.
 - **Nome, qualidade e stats** vêm do jogo quando o item carrega. O cálculo pede os dados e espera até cerca de 16 segundos. O que não chegar aparece na linha de cima como "ainda sem dados".
 - **Clique** escreve no chat de onde vem. **Shift+clique** põe o link.
 

@@ -25,7 +25,7 @@ end
 
 -- Lê as fontes de um item do banco. Fica a que ele consegue usar: quest não feita, dungeon (a de
 -- maior % de drop), vendedor ou intendente da facção dele. kinds = todos os tipos que sobraram
--- (o filtro Quests/Dungeons da janela olha esses).
+-- (os botões Quests/Dungeons/Vendedores da janela olham esses).
 local function bestSource(S, e, mySide)
   local best, kinds = nil, {}
   for i = 3, #e do

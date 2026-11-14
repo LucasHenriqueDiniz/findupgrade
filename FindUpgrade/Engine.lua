@@ -8,7 +8,14 @@ FU = FU or FindUpgrade
 
 -- O que comparar: no modo "ah", o equipamento à venda (Scan.lua: o do VaultSync ou a varredura
 -- própria); no modo "src", recompensa de quest e drop de dungeon (Sources.lua).
-function FU.mode() return FU.db().mode == "src" and "src" or "ah" end
+-- view: o botão escolhido (ah, quest, dungeon, vendor); mode: a família da lista (ah ou src).
+-- Quest, Dungeon e Vendedores dividem a mesma lista e a mesma conta: trocar entre eles é na hora.
+FU.VIEWS = { ah = true, quest = true, dungeon = true, vendor = true }
+function FU.view()
+  local v = FU.db().mode
+  return FU.VIEWS[v or ""] and v or "ah"
+end
+function FU.mode() return FU.view() == "ah" and "ah" or "src" end
 
 function FU.load()
   if FU.mode() == "src" then return FU.src.load() end
@@ -174,7 +181,16 @@ function FU.evaluate(g, ctx, pending)
 end
 
 -- Calcula em pedaços (pra não travar o jogo) e chama done(ctx), ou done(nil) sem varredura.
-function FU.compute(done)
+-- Relógio em ms (debugprofilestop no jogo) e o orçamento de cada fatia da conta: passou de
+-- BUDGET ms, o resto fica pro próximo frame, então a conta nunca trava o jogo.
+local clock = debugprofilestop or function() return os.clock() * 1000 end
+local BUDGET = 8
+
+-- Calcula em fatias de até BUDGET ms e chama done(ctx), ou done(nil) sem lista. gen: se outra
+-- conta começou depois (FU.gen mudou), esta para no meio e não chama done.
+function FU.compute(done, gen)
+  local function stale() return gen and gen ~= FU.gen end
+  local t0 = clock()
   local list = FU.load()
   if not list then
     done(nil)
@@ -184,48 +200,63 @@ function FU.compute(done)
   -- Peça equipada sem dados (logo depois do /reload): espera carregar, até ~3s.
   if ctx.missing > 0 and (FU.waitEq or 0) < 6 then
     FU.waitEq = (FU.waitEq or 0) + 1
-    C_Timer.After(0.5, function() FU.compute(done) end)
+    C_Timer.After(0.5, function() if not stale() then FU.compute(done, gen) end end)
     return
   end
   FU.waitEq = 0
-  local pending, i, tries = {}, 0, 0
+  local pending, tries = {}, 0
+  local maxTries = FU.mode() == "src" and 8 or 3 -- quest e dungeon trazem centenas de itens nunca vistos
+  local perf = { mode = FU.view(), items = #list, work = clock() - t0, slices = 1, maxSlice = clock() - t0 }
   local function finish()
     ctx.total, ctx.pending = #list, #pending
+    perf.pending, perf.tries = #pending, tries
+    FU.perf = perf
     done(ctx)
   end
-  local function retry()
-    tries = tries + 1
-    local again = pending
-    pending = {}
-    for _, g in ipairs(again) do FU.evaluate(g, ctx, pending) end
-    -- Quest e dungeon trazem centenas de itens que o cliente ainda não viu: espera mais.
-    if #pending > 0 and tries < (FU.mode() == "src" and 8 or 3) then
-      C_Timer.After(2, retry)
+  -- Avalia a lista em fatias de até BUDGET ms; then() quando acabar.
+  local function sliced(items, then_)
+    local i = 0
+    local function slice()
+      if stale() then return end
+      local s0 = clock()
+      while i < #items do
+        i = i + 1
+        FU.evaluate(items[i], ctx, pending)
+        if clock() - s0 > BUDGET then break end
+      end
+      local ms = clock() - s0
+      perf.work, perf.slices = perf.work + ms, perf.slices + 1
+      if ms > perf.maxSlice then perf.maxSlice = ms end
+      if i < #items then
+        C_Timer.After(0, slice)
+      else
+        then_()
+      end
+    end
+    slice()
+  end
+  local function afterPass()
+    if #pending > 0 and tries < maxTries then
+      C_Timer.After(2, function()
+        if stale() then return end
+        tries = tries + 1
+        local again = pending
+        pending = {}
+        sliced(again, afterPass)
+      end)
     else
       finish()
     end
   end
-  local function step()
-    local stop = math.min(#list, i + 60)
-    for j = i + 1, stop do FU.evaluate(list[j], ctx, pending) end
-    i = stop
-    if i < #list then
-      C_Timer.After(0, step)
-    elseif #pending > 0 then
-      C_Timer.After(2, retry)
-    else
-      finish()
-    end
-  end
-  step()
+  sliced(list, afterPass)
 end
 
 -- Filtros: level (até o meu + N), preço máximo por peça e, se marcado, o total cabe no gold.
 function FU.filters(ctx)
   local db = FU.db()
   if FU.mode() == "src" then
-    -- Quest e dungeon não têm preço: só level e o tipo de fonte (quest, dungeon ou tudo).
-    return { maxLevel = ctx.level + (db.plus or 0), weaponMode = db.weaponMode, kind = db.srcKind or "all" }
+    -- Quest, dungeon e vendedor não têm preço: só level e o tipo de fonte (o botão escolhido).
+    return { maxLevel = ctx.level + (db.plus or 0), weaponMode = db.weaponMode, kind = FU.view() }
   end
   return { maxLevel = ctx.level + (db.plus or 0), maxPiece = FU.maxPiece(), money = db.fitGold and ctx.money or nil,
     weaponMode = db.weaponMode }
@@ -234,8 +265,10 @@ end
 local function pass(c, f)
   if c.kept then return true end
   if c.req > f.maxLevel then return false end
-  if f.kind and f.kind ~= "all" and not (c.g.src and ((c.g.src.kinds and c.g.src.kinds[f.kind]) or c.g.src.kind == f.kind)) then
-    return false
+  if f.kind then
+    local k = c.g.src and c.g.src.kinds or {}
+    -- Vendedores junta vendedor e intendente de reputação.
+    if not (k[f.kind] or (f.kind == "vendor" and k.rep)) then return false end
   end
   if f.maxPiece and c.price > f.maxPiece then return false end
   return true

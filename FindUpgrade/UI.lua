@@ -270,11 +270,13 @@ function FU.build()
   f.title = text(body, "GameFontNormal")
   f.title:SetPoint("TOPLEFT", 12, -8)
   f.title:SetText("Upgrades")
+  -- Leilão é uma conta; Quests, Dungeons e Vendedores dividem outra (o banco de fontes). Trocar de
+  -- botão usa a conta guardada: só recalcula o que mudou (peça, level, papel, pesos, varredura).
   f.modeSeg = segmented(body, {
-    { value = "ah", label = "Leilão", w = 64, tip = { "Leilão", "O que está à venda no AH agora." } },
-    { value = "src", label = "Quests e dungeons", w = 124,
-      tip = { "Quests e dungeons", "Recompensa de quest, drop de boss de dungeon, rare e vendedor.",
-        "Vem do banco de fontes que vem junto com o addon: não precisa do leiloeiro nem de outro addon." } },
+    { value = "ah", label = "Leilão", w = 60, tip = { "Leilão", "O que está à venda no AH agora." } },
+    { value = "quest", label = "Quests", w = 58, tip = { "Quests", "Recompensa de quest. As que tu já fez e as da outra facção somem." } },
+    { value = "dungeon", label = "Dungeons", w = 70, tip = { "Dungeons", "Drop de dungeon, com o boss e a % de drop quando o banco tem." } },
+    { value = "vendor", label = "Vendedores", w = 78, tip = { "Vendedores", "Vendedor e intendente de reputação da tua facção." } },
   }, function(v)
     FU.db().mode = v
     FU.offset = 0
@@ -291,6 +293,7 @@ function FU.build()
   end, function(v)
     FU.db().role = v
     FU.offset = 0
+    FU.invalidate()
     FU.show() -- pesos novos: recalcula tudo
   end)
   f.role:SetPoint("TOPRIGHT", body, "TOPRIGHT", -34, -5)
@@ -399,17 +402,6 @@ function FU.build()
   cbLabel:SetPoint("LEFT", cb, "RIGHT", 2, 0)
   cbLabel:SetText("Só o que cabe no meu gold")
   f.priceBits = { maxLabel, eb, f.unit, cb, cbLabel }
-  -- No modo Quests e dungeons, no lugar do preço: que tipo de fonte mostrar.
-  f.kindSeg = segmented(body, {
-    { value = "all", label = "Tudo", w = 50 },
-    { value = "quest", label = "Quests", w = 60, tip = { "Só recompensa de quest", "As que tu já fez somem." } },
-    { value = "dungeon", label = "Dungeons", w = 74, tip = { "Só drop de dungeon", "Com o boss e a % de drop, quando o banco tem." } },
-  }, function(v)
-    FU.db().srcKind = v
-    FU.offset = 0
-    FU.refresh()
-  end)
-  f.kindSeg.buttons[1]:SetPoint("LEFT", f.levelSeg.buttons[4], "RIGHT", 22, 0)
 
   local line = body:CreateTexture(nil, "ARTWORK")
   line:SetPoint("TOPLEFT", 10, -80)
@@ -704,8 +696,9 @@ function FU.draw()
   elseif not ctx then
     info = "Calculando..."
   elseif srcMode then
-    info = string.format("Quests e dungeons · %d itens · banco de %s · lvl %d", ctx.total or 0, FU.src.available() or "?",
-      ctx.level)
+    local names = { quest = "Quests", dungeon = "Dungeons", vendor = "Vendedores" }
+    info = string.format("%s · %d itens no banco (de %s) · lvl %d", names[FU.view()] or "Fontes", ctx.total or 0,
+      FU.src.available() or "?", ctx.level)
     if (ctx.pending or 0) > 0 then info = info .. string.format(" · %d ainda sem dados (abre de novo daqui a pouco)", ctx.pending) end
   else
     info = string.format("Varredura de %s · %d peças · teu gold %s · lvl %d", scanWhen(), ctx.total or 0,
@@ -723,9 +716,7 @@ function FU.draw()
   f.levelSeg.Select(db.plus)
   f.levelSeg.buttons[1].label:SetText(ctx and ("Meu lvl (" .. ctx.level .. ")") or "Meu lvl")
   f.fitGold:SetChecked(db.fitGold)
-  f.modeSeg.Select(FU.mode())
-  f.kindSeg.Select(db.srcKind or "all")
-  f.kindSeg.SetShown(srcMode)
+  f.modeSeg.Select(FU.view())
   for _, w in ipairs(f.priceBits) do w:SetShown(not srcMode) end
   local unit = FU.UNIT_BY[db.maxUnit] or FU.UNIT_BY.g
   f.unit.Set(nil, unit.icon)
@@ -805,6 +796,16 @@ function FU.refresh()
 end
 
 -- Abre a janela e recalcula com a varredura que tiver.
+-- A conta guardada de cada família (ah, src). Joga fora quando muda o que entra nela:
+-- FU.invalidate() tudo (peça, level, papel, pesos), FU.invalidate("ah") varredura nova,
+-- FU.invalidate("src") quest entregue.
+FU.ctxBy = FU.ctxBy or {}
+function FU.invalidate(family)
+  if family then FU.ctxBy[family] = nil else FU.ctxBy = {} end
+end
+
+-- Abre a janela. Com a conta da família guardada, só redesenha (troca de botão na hora); senão
+-- começa uma conta nova e larga a que estava rodando (ela para no meio, sem travar nada).
 function FU.show()
   if not FU.frame then
     local ok, f = pcall(FU.build)
@@ -815,22 +816,26 @@ function FU.show()
     FU.frame = f
   end
   FU.frame:Show()
-  if FU.computing then
-    FU.again = true
+  local fam = FU.mode()
+  local cached = FU.ctxBy[fam]
+  if cached then
+    FU.gen = (FU.gen or 0) + 1 -- a conta da outra família, se rodando, não serve mais
+    FU.computing, FU.noData, FU.ctx = false, false, cached
+    FU.refresh()
     return
   end
-  FU.computing = true
+  FU.gen = (FU.gen or 0) + 1
+  local gen = FU.gen
+  FU.computing, FU.ctx, FU.res = true, nil, nil
   FU.refresh()
   FU.compute(function(ctx)
+    if gen ~= FU.gen then return end
     FU.computing = false
     FU.noData = ctx == nil
     FU.ctx = ctx
+    if ctx then FU.ctxBy[fam] = ctx end
     FU.refresh()
-    if FU.again then
-      FU.again = false
-      FU.show()
-    end
-  end)
+  end, gen)
 end
 
 -- Tooltips e cliques ------------------------------------------------------------
@@ -973,6 +978,7 @@ end
 
 -- A varredura terminou (do botão, do VaultSync ou do Auctionator): recalcula se aberta.
 function FU.gearChanged()
+  FU.invalidate("ah")
   if FU.mode() == "ah" and FU.frame and FU.frame:IsShown() then FU.show() end
 end
 
@@ -990,14 +996,23 @@ function FU.run(msg)
     FU.cfg.show()
     return
   end
-  -- "/fu quests" (ou dungeons, fontes) abre no modo Quests e dungeons; "/fu ah", no leilão.
-  if msg == "quests" or msg == "quest" or msg == "dungeons" or msg == "fontes" then
-    FU.db().mode = "src"
-  elseif msg == "ah" or msg == "leilao" then
-    FU.db().mode = "ah"
+  -- "/fu debug": quanto a última conta levou (pra achar travada).
+  if msg == "debug" then
+    local p = FU.perf
+    if not p then
+      say("ainda não teve conta nesta sessão.")
+    else
+      say(string.format("última conta (%s): %d itens · %.0f ms de trabalho em %d fatias (maior %.1f ms) · %d sem dados depois de %d tentativas",
+        p.mode, p.items, p.work, p.slices, p.maxSlice, p.pending or 0, p.tries or 0))
+    end
+    return
   end
+  -- "/fu quests", "/fu dungeons", "/fu vendedores" e "/fu ah" abrem direto no botão.
+  local views = { quests = "quest", quest = "quest", fontes = "quest", dungeons = "dungeon", dungeon = "dungeon",
+    vendedores = "vendor", vendedor = "vendor", ah = "ah", leilao = "ah" }
+  if views[msg] then FU.db().mode = views[msg] end
   if FU.mode() == "src" then
-    if not FU.load() then
+    if not FU.src.available() then
       say("o banco de fontes (SourcesData.lua) não carregou: reinstala o FindUpgrade.")
       return
     end
@@ -1119,7 +1134,7 @@ end
 
 local ev = CreateFrame("Frame")
 for _, e in ipairs({ "ADDON_LOADED", "PLAYER_LOGIN", "AUCTION_HOUSE_SHOW", "AUCTION_HOUSE_CLOSED", "PLAYER_MONEY",
-  "PLAYER_EQUIPMENT_CHANGED", "PLAYER_LEVEL_UP" }) do
+  "PLAYER_EQUIPMENT_CHANGED", "PLAYER_LEVEL_UP", "QUEST_TURNED_IN" }) do
   pcall(ev.RegisterEvent, ev, e)
 end
 ev:SetScript("OnEvent", function(_, event, arg1)
@@ -1137,7 +1152,11 @@ ev:SetScript("OnEvent", function(_, event, arg1)
   if event == "PLAYER_MONEY" then
     if FU.ctx then FU.ctx.money = GetMoney() or FU.ctx.money end
     FU.refresh()
+  elseif event == "QUEST_TURNED_IN" then
+    FU.invalidate("src") -- a quest entregue sai da lista na próxima vez
+    if FU.mode() == "src" then FU.show() end
   elseif event == "PLAYER_EQUIPMENT_CHANGED" or event == "PLAYER_LEVEL_UP" then
+    FU.invalidate()
     if FU.debounce then return end
     FU.debounce = true
     C_Timer.After(1, function()

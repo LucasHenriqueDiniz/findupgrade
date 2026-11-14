@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.7.0 · 14/11/2026
+
+- **Botões separados:** Leilão, **Quests**, **Dungeons** e **Vendedores** (vendedor + intendente de reputação), no lugar do modo único "Quests e dungeons" com filtro de tipo. Atalhos: `/fu quests`, `/fu dungeons` e `/fu vendedores`.
+- **Trocar de modo não trava mais.**
+  - Antes, a conta nova esperava a anterior terminar: no modo de quests isso podia levar até ~16 s esperando os itens carregarem. Agora a anterior para no meio (`FU.gen`).
+  - A conta roda em fatias de até 8 ms por frame. Antes eram 60 itens por frame, e as novas tentativas iam todas de uma vez.
+  - A conta de cada família fica guardada (`FU.ctxBy`), então trocar entre Quests, Dungeons e Vendedores, ou voltar pro Leilão, é na hora. Ela é refeita quando muda a peça, o level, o papel ou os pesos, quando chega varredura nova ou quando uma quest é entregue.
+- **`/fu debug`:** mostra quanto a última conta levou (itens, ms de trabalho, maior fatia, itens sem dados).
+
 ## 1.6.0 · 14/11/2026
 
 - **Tela de configurações.** Abre pela engrenagem no alto da janela, com `/fu config` ou em Opções → AddOns. Tem:

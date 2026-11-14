@@ -16,7 +16,7 @@ npm test
 | `e2e-priest.cjs` | priest de cura sem o VaultSync: varredura própria, notas, filtros, moeda, combos, cliques, papel, `/reload`, apagar reino velho |
 | `e2e-warrior.cjs` | warrior: 2 mãos × duas armas × arma + escudo, crítico e AP do tooltip, tank, placa no 40 |
 | `e2e-vaultsync.cjs` | com o VaultSync: usa a varredura dele (o contrato do `VaultSyncAPI`) |
-| `e2e-sources.cjs` | Quests e dungeons: o banco de verdade carrega, e com um banco pequeno de teste: facção, quest feita, level do item, filtro de tipo e o botão da janela do personagem |
+| `e2e-sources.cjs` | Quests, Dungeons e Vendedores: o banco de verdade carrega; com um banco pequeno de teste: facção, quest feita, level do item, cada botão, a conta guardada (trocar não recalcula), a conta velha parando no meio e o botão da janela do personagem |
 | `e2e-tooltip.cjs` | a linha de upgrade no tooltip: upgrade, pior, igual, a peça equipada, a arma de 2 mãos contra 1 mão + off-hand, o level pedido, a fonte e desligar |
 | `e2e-config.cjs` | configurações: dica no tooltip, botões, varrer sozinho, ganho mínimo, pesos por cima do papel e "voltar ao padrão", página em Opções → AddOns |
 | `harness.cjs` | carrega os arquivos na ordem do `.toc` e roda um teste |
