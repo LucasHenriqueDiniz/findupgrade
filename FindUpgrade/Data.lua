@@ -8,7 +8,7 @@ local _, FU = ...
 FU = FU or {}
 FindUpgrade = FU -- global: /dump FindUpgrade.ctx no jogo, e os testes leem
 
-FU.VERSION = "1.7.1"
+FU.VERSION = "1.7.2"
 FU.PLUS = { 0, 3, 5, 10 } -- botões de level: só o meu, até +3, +5, +10
 FU.MAXPLUS = 10
 FU.PER_ITEM = 3 -- no máximo 3 combos com a mesma arma comprada (senão ela enche a lista)
@@ -66,13 +66,20 @@ FU.CLASSES = {
 -- warrior, 20 Agi ≈ 1% de crítico, 1 de DPS de arma ≈ 14 AP (ver docs/pontuacao.md e as fontes).
 -- crit, hit, dodge, parry, block: por 1%. dpsBy: quanto o DPS de cada arma conta (a off-hand bate
 -- metade no dual wield; o caçador vive da arma de distância). min: ganho mínimo pra aparecer.
+-- Wand (15/11): pro priest, mago e warlock upando é o maior dano que eles têm, e não gasta mana.
+-- Antes o DPS dela não contava, e a Moonstone Wand (13,6 dps, +2 Int) saía upgrade sobre a
+-- Greater Magic Wand (17,5 dps, +2 SP). 1 DPS de wand ≈ 2 pontos pra cura, 3 pra dano mágico;
+-- a arma da mão (staff, maça) não conta o DPS.
+local WAND = { MainHand = 0, OffHand = 0, Ranged = 1 }
 FU.ROLES = {
   heal = { label = "Cura", min = 2,
-    w = { heal = 1.0, int = 0.9, spi = 0.6, mp5 = 1.6, sta = 0.25, armor = 0.004 } },
+    w = { heal = 1.0, int = 0.9, spi = 0.6, mp5 = 1.6, sta = 0.25, dps = 2, armor = 0.004 }, dpsBy = WAND },
   spell = { label = "Dano mágico", min = 2,
-    w = { dmg = 1.0, int = 0.7, spi = 0.3, mp5 = 1.2, sta = 0.4, spellcrit = 10, spellhit = 10, armor = 0.004 } },
+    w = { dmg = 1.0, int = 0.7, spi = 0.3, mp5 = 1.2, sta = 0.4, spellcrit = 10, spellhit = 10, dps = 3, armor = 0.004 },
+    dpsBy = WAND },
   warlock = { label = "Dano mágico", min = 2,
-    w = { dmg = 1.0, int = 0.6, spi = 0.4, mp5 = 1.0, sta = 0.6, spellcrit = 10, spellhit = 10, armor = 0.004 } },
+    w = { dmg = 1.0, int = 0.6, spi = 0.4, mp5 = 1.0, sta = 0.6, spellcrit = 10, spellhit = 10, dps = 3, armor = 0.004 },
+    dpsBy = WAND },
   str = { label = "DPS (força)", min = 4,
     w = { str = 2, ap = 1, agi = 1, crit = 20, hit = 15, sta = 0.5, dps = 14, armor = 0.02 },
     dpsBy = { MainHand = 1, OffHand = 0.5, Ranged = 0.1 } },

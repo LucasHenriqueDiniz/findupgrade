@@ -32,7 +32,7 @@ Ficam em `FU.ROLES`, no `Data.lua`.
 | AP de distância | | | | | 1 | |
 | 1% crítico | | 10 (feitiço) | 20 | 20 | 20 | |
 | 1% acerto | | 10 (feitiço) | 15 | 15 | 15 | 8 |
-| 1 DPS de arma | | | 14 | 14 | 14 | 3 |
+| 1 DPS de arma | 2 (wand) | 3 (wand) | 14 | 14 | 14 | 3 |
 | Defesa | | | | | | 3 |
 | 1% esquiva / aparar | | | | | | 25 |
 | 1% bloqueio | | | | | | 15 |
@@ -62,6 +62,9 @@ No 16, a Tear of Grief (+5 Int, -3 Spi) contra o Dwarven Tome (+3 SP, +1 Spi): 4
 | DPS (força), DPS (agilidade) | 1 | 0,5 | 0,1 |
 | Caçador | 0,15 | 0,05 | 1 |
 | Tank | 1 | 0 | 0 |
+| Cura, Dano mágico, Warlock | 0 | 0 | 1 (wand) |
+
+**Wand.** Pro priest, mago e warlock upando, a wand é o maior dano que eles têm e não gasta mana ([Mobalytics: Priest Leveling (Forever)](https://mobalytics.gg/wow-forever/classes/priest-leveling-guide-yumytv)). 1 DPS de wand vale 2 pontos pra cura e 3 pra dano mágico. O DPS da staff ou da maça não conta. Caso de 15/11, no 20: a Moonstone Wand (13,6 dps, +2 Int) saía upgrade sobre a Greater Magic Wand (17,5 dps, +2 SP); agora sai -7,1.
 
 No Classic, a arma da off-hand bate com metade do dano. O talento de duas armas aumenta isso, mas não está na conta.
 

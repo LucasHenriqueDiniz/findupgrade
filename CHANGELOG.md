@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.2 · 15/11/2026
+
+- **O DPS da wand conta** pra cura (1 DPS = 2 pontos) e dano mágico (3 pontos). Antes não contava, e uma wand mais fraca com +2 Int saía upgrade (Moonstone Wand sobre a Greater Magic Wand). O DPS da staff e da maça continua fora.
+
 ## 1.7.1 · 15/11/2026
 
 - **Spell power vale menos no level baixo.** Os pesos de cura e de dano mágico são de quem está no ~40. Abaixo disso, o peso vai × `FU.spellScale(level)`: 0,38 no 16, 0,53 no 20, 0,8 no 30, cheio do 40 pra cima. Duas razões:

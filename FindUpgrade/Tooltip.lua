@@ -115,7 +115,14 @@ function tip.evaluate(link)
     local b = FU.base(ctx, FU.GROUP_OF[slots[1]])
     vsScore, vsName, vsStats = b.score, b.name, ctx.eq[b.slot] and ctx.eq[b.slot].s
   end
-  return { gain = score - vsScore, vs = vsName, delta = tip.delta(s, vsStats, ctx.w), req = req, note = note,
+  -- O DPS só entra no "o que muda" onde ele conta (a wand pra quem cura, não a staff).
+  local wd = ctx.w
+  local by = ctx.rs and ctx.rs.dpsBy
+  if wd.dps and by and (by[slot] or 0) == 0 then
+    wd = {}
+    for k, v in pairs(ctx.w) do if k ~= "dps" then wd[k] = v end end
+  end
+  return { gain = score - vsScore, vs = vsName, delta = tip.delta(s, vsStats, wd), req = req, note = note,
     level = ctx.level, id = id }
 end
 

@@ -10,6 +10,9 @@ ITEMS = {
   [2777] = { "Feeble Shortbow Mace", "INVTYPE_WEAPONMAINHAND", 2, 4, 10, {} },
   [279898] = { "Dwarven Tome", "INVTYPE_HOLDABLE", 4, 0, 12, { ITEM_MOD_SPIRIT_SHORT = 1, ITEM_MOD_SPELL_POWER_SHORT = 3 } },
   [5611] = { "Tear of Grief", "INVTYPE_HOLDABLE", 4, 0, 14, { ITEM_MOD_INTELLECT_SHORT = 5, ITEM_MOD_SPIRIT_SHORT = -3 } },
+  [11288] = { "Greater Magic Wand", "INVTYPE_RANGEDRIGHT", 2, 19, 13, { ITEM_MOD_SPELL_POWER_SHORT = 2, ITEM_MOD_DAMAGE_PER_SECOND_SHORT = 17.5 } },
+  [15204] = { "Moonstone Wand", "INVTYPE_RANGEDRIGHT", 2, 19, 18, { ITEM_MOD_INTELLECT_SHORT = 2, ITEM_MOD_DAMAGE_PER_SECOND_SHORT = 13.6 } },
+  [2779] = { "Heavy Mace", "INVTYPE_WEAPONMAINHAND", 2, 4, 12, { ITEM_MOD_INTELLECT_SHORT = 1, ITEM_MOD_DAMAGE_PER_SECOND_SHORT = 9 } },
 }
 CACHED = {}
 EQUIP = { [16] = link(2777), [17] = link(279898) }
@@ -54,6 +57,18 @@ fire("PLAYER_LEVEL_UP")
 assert(FU.context().w.heal == 1, "peso dele: " .. tostring(FU.context().w.heal))
 FU.db().weights = nil
 assert(near(FU.context().w.heal, 0.3835), "sem peso dele, o do level")
+
+-- Wand (15/11, no 20): o DPS dela conta pra quem cura. A Moonstone (13,6 dps, +2 Int) perde da
+-- Greater Magic (17,5 dps, +2 SP): 1,8 - 2 x 0,53 - 3,9 x 2 = -7,1.
+LEVEL = 20
+EQUIP[18] = link(11288)
+fire("PLAYER_EQUIPMENT_CHANGED")
+T = hover(link(15204))
+assert(T:find("Pior que Greater Magic Wand (-7,1)", 1, true), "wand: " .. T)
+assert(T:find("-3,9 dps", 1, true), "o DPS no que muda: " .. T)
+-- A maça da mão não conta o DPS (nem aparece no que muda).
+T = hover(link(2779))
+assert(not T:find("dps", 1, true), "maça sem dps: " .. T)
 `;
 
 run('spell power por level', setup, driver);

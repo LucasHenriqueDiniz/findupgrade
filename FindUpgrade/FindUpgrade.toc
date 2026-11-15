@@ -2,7 +2,7 @@
 ## Title: FindUpgrade
 ## Notes: Upgrades de equipamento pelo papel da classe: o que está à venda no AH e o que vem de quest, dungeon, vendedor e reputação (banco próprio). /findupgrade
 ## Author: LucasHenriqueDiniz
-## Version: 1.7.1
+## Version: 1.7.2
 ## OptionalDeps: VaultSync, VaultAH, EllesmereUI, ElvUI
 ## SavedVariables: FindUpgradeAH
 ## SavedVariablesPerCharacter: FindUpgradeDB
