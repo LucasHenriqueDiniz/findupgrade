@@ -49,10 +49,10 @@ function FU.context()
   -- Pesos e ganho mínimo da tela de configurações, por cima dos do papel (peso 0 tira o stat).
   local db = FU.db()
   local w, custom = rs.w, db.weights and db.weights[role]
-  if custom and next(custom) then
+  if (custom and next(custom)) or FU.spellScale(level) < 1 then
     w = {}
-    for k, v in pairs(rs.w) do w[k] = v end
-    for k, v in pairs(custom) do w[k] = (v ~= 0) and v or nil end
+    for k in pairs(rs.w) do w[k] = FU.roleWeight(rs, k, level) end
+    for k, v in pairs(custom or {}) do w[k] = (v ~= 0) and v or nil end
   end
   local ctx = { class = cls, ci = ci, level = level, money = GetMoney() or 0, role = role, rs = rs, w = w,
     min = db.minGain or rs.min or 2, tier = (level >= 40 and ci.armor40) or ci.armor, eq = {}, missing = 0, skipped = 0,

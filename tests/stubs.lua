@@ -108,6 +108,9 @@ function loadAddon()
     local chunk = assert(load(f.src, "=" .. f.name))
     chunk("FindUpgrade", ns)
   end
+  -- Os testes de antes contam com os pesos do papel cheios. Spell power por level tem o teste
+  -- dele (e2e-level.cjs), que liga REAL_SPELL_SCALE.
+  if not REAL_SPELL_SCALE then ns.spellScale = function() return 1 end end
   fire("ADDON_LOADED", "FindUpgrade")
   return ns
 end

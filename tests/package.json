@@ -1,10 +1,10 @@
 {
   "name": "findupgrade-tests",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "private": true,
   "description": "Testes do addon FindUpgrade fora do jogo: sintaxe Lua 5.1 e a API do WoW simulada (fengari)",
   "scripts": {
-    "test": "node check.cjs && node e2e-priest.cjs && node e2e-warrior.cjs && node e2e-vaultsync.cjs && node e2e-sources.cjs && node e2e-tooltip.cjs && node e2e-config.cjs"
+    "test": "node check.cjs && node e2e-priest.cjs && node e2e-warrior.cjs && node e2e-vaultsync.cjs && node e2e-sources.cjs && node e2e-tooltip.cjs && node e2e-config.cjs && node e2e-level.cjs"
   },
   "license": "GPL-3.0",
   "dependencies": {

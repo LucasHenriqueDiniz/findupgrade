@@ -92,6 +92,9 @@ function cfg.build()
   f:SetSize(W, H)
   f:SetPoint("CENTER", 260, 20)
   f:SetFrameStrata("DIALOG")
+  -- Toplevel e Raise ao abrir: fica inteira por cima da janela principal (antes as duas se
+  -- misturavam, 14/11).
+  if f.SetToplevel then f:SetToplevel(true) end
   f:SetClampedToScreen(true)
   f:SetMovable(true)
   f:EnableMouse(true)
@@ -167,7 +170,7 @@ function cfg.build()
   hint:SetPoint("TOPLEFT", 14, -278)
   hint:SetWidth(W - 28)
   hint:SetJustifyH("LEFT")
-  hint:SetText("Quanto vale cada stat no papel de agora. Vazio = padrão (em cinza); 0 tira o stat da conta. Enter aplica.")
+  hint:SetText("Quanto vale cada stat no papel de agora. Vazio = padrão (em cinza); 0 tira o stat da conta. Enter aplica. Cura e dano mágico valem menos antes do lvl 40.")
   f.weights = {}
   local per = math.ceil(#FU.STAT_ORDER / 2)
   for i, stat in ipairs(FU.STAT_ORDER) do
@@ -217,7 +220,8 @@ function cfg.refresh()
   local custom = db().weights and db().weights[role] or {}
   for _, eb in ipairs(f.weights) do
     eb:SetText(fmt(custom[eb.stat]))
-    eb.def:SetText(rs.w[eb.stat] and ("padrão " .. fmt(rs.w[eb.stat])) or "padrão 0")
+    local v = FU.roleWeight(rs, eb.stat, UnitLevel("player"))
+    eb.def:SetText(v and ("padrão " .. fmt(math.floor(v * 100 + 0.5) / 100)) or "padrão 0")
   end
 end
 
@@ -231,6 +235,7 @@ function cfg.show()
     cfg.frame = f
   end
   cfg.frame:Show()
+  if cfg.frame.Raise then cfg.frame:Raise() end
   cfg.refresh()
 end
 

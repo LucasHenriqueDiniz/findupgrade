@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.7.1 · 15/11/2026
+
+- **Spell power vale menos no level baixo.** Os pesos de cura e de dano mágico são de quem está no ~40. Abaixo disso, o peso vai × `FU.spellScale(level)`: 0,38 no 16, 0,53 no 20, 0,8 no 30, cheio do 40 pra cima. Duas razões:
+  - rank aprendido antes do 20 recebe menos do bônus;
+  - com pouca mana saem poucas curas, e cada uma ganha o bônus uma vez, enquanto o Int rende o mesmo em qualquer level.
+  - Caso que levantou isso: no 16, a Tear of Grief (+5 Int, -3 Spi) aparecia pior que o Dwarven Tome (+3 SP, +1 Spi). Agora é upgrade.
+  - Peso que você muda na tela de configurações fica como você pôs. A tela mostra o padrão já no seu level.
+- A janela clicada fica por cima da outra (a principal e a de configurações se misturavam).
+- Trocar pra Dungeons não mostra mais "o banco não carregou" da conta anterior.
+
 ## 1.7.0 · 14/11/2026
 
 - **Botões separados:** Leilão, **Quests**, **Dungeons** e **Vendedores** (vendedor + intendente de reputação), no lugar do modo único "Quests e dungeons" com filtro de tipo. Atalhos: `/fu quests`, `/fu dungeons` e `/fu vendedores`.

@@ -48,6 +48,13 @@ O Warlock usa o Dano mágico com mais Sta (0,6) e Spi (0,4).
 
 Os guias do Forever pra warrior upando dão a mesma ordem: DPS da arma, depois Força/AP, Stamina, Agilidade e Armadura ([Warcraft Tavern: Warrior Leveling (Forever)](https://www.warcrafttavern.com/forever/guides/warrior-leveling/)). Os pesos de cura são os que o dono do addon usa no priest. São um ponto de partida: se um peso não bate com o que você sente no jogo, mude no `Data.lua`.
 
+**Spell power por level.** Os pesos de cura e dano mágico da tabela são de quem está no ~40. Abaixo disso o peso vai × `FU.spellScale(level)` (0,38 no 16, 0,53 no 20, 0,8 no 30, 1 do 40 pra cima), por duas razões:
+
+1. Rank aprendido antes do 20 recebe menos do bônus: 1 - (20 - level do rank) × 3,75%. O rank que se usa costuma ser de uns 3 levels antes.
+2. Com pouca mana saem poucas curas até acabar, e cada uma ganha o bônus uma vez. Já o Int (15 de mana por ponto) rende o mesmo em qualquer level. Mana ÷ custo da cura do priest dá ~3 no 16, ~4 no 20, ~5 no 30 e ~6 no 40.
+
+No 16, a Tear of Grief (+5 Int, -3 Spi) contra o Dwarven Tome (+3 SP, +1 Spi): 4,5 - 2,4 - 3 × 0,38 = +0,95, upgrade. No 40 dá -0,9. Peso mudado na tela de configurações não leva essa conta.
+
 ### `dpsBy`: quanto o DPS de cada arma conta
 
 | Papel | Mão principal | Off-hand | Distância |

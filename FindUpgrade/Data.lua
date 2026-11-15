@@ -8,7 +8,7 @@ local _, FU = ...
 FU = FU or {}
 FindUpgrade = FU -- global: /dump FindUpgrade.ctx no jogo, e os testes leem
 
-FU.VERSION = "1.7.0"
+FU.VERSION = "1.7.1"
 FU.PLUS = { 0, 3, 5, 10 } -- botões de level: só o meu, até +3, +5, +10
 FU.MAXPLUS = 10
 FU.PER_ITEM = 3 -- no máximo 3 combos com a mesma arma comprada (senão ela enche a lista)
@@ -87,6 +87,30 @@ FU.ROLES = {
       hit = 8, ap = 0.3, dps = 3 },
     dpsBy = { MainHand = 1, OffHand = 0, Ranged = 0 } },
 }
+
+-- Spell power (cura e dano mágico) no level baixo vale bem menos que os pesos acima, que são de
+-- quem está no ~40. No 16 o tooltip dava a Tear of Grief (+5 Int) pior que o Dwarven Tome (+3 SP),
+-- e é o contrário (14/11). Duas razões:
+--  1. rank aprendido antes do 20 recebe menos do bônus: 1 - (20 - level do rank) x 3,75%; o rank
+--     que se usa costuma ser de uns 3 levels antes;
+--  2. com pouca mana saem poucas curas até acabar, e cada uma ganha o bônus uma vez; o Int (15 de
+--     mana por ponto) rende o mesmo em qualquer level. Mana / custo da cura do priest: ~3 no 16,
+--     ~4 no 20, ~5 no 30, ~6 no 40.
+-- O peso de cura e de dano mágico do papel vai x FU.spellScale(level): 0,38 no 16, 0,53 no 20,
+-- 0,8 no 30, 1 do 40 pra cima. Peso que ele mudou na tela de configurações fica como ele pôs.
+FU.SPELL_POWER = { heal = true, dmg = true }
+function FU.spellScale(level)
+  level = level or 60
+  local coef = level >= 23 and 1 or math.max(0.3, 1 - (23 - level) * 0.0375)
+  return coef * math.min(1, (level + 10) / 50)
+end
+
+-- O peso padrão do papel no level (com a conta acima).
+function FU.roleWeight(rs, stat, level)
+  local v = rs.w[stat]
+  if v and FU.SPELL_POWER[stat] then v = v * FU.spellScale(level) end
+  return v
+end
 
 -- Chave do GetItemStats → stat. A primeira que bater vale, por isso a ordem importa:
 -- SPELL_HEALING antes de SPELL_POWER, SPELL_CRIT antes de CRIT, RANGED_ATTACK_POWER antes de

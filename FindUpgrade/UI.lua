@@ -238,6 +238,9 @@ function FU.build()
     f:SetPoint("CENTER", -180, 30)
   end
   f:SetFrameStrata("DIALOG")
+  -- Toplevel: a janela clicada fica por cima da outra (com a de configurações, as duas se
+  -- misturavam: mesma camada, e os pedaços de uma apareciam por cima da outra, 14/11).
+  if f.SetToplevel then f:SetToplevel(true) end
   f:SetClampedToScreen(true)
   f:SetMovable(true)
   f:EnableMouse(true)
@@ -826,7 +829,9 @@ function FU.show()
   end
   FU.gen = (FU.gen or 0) + 1
   local gen = FU.gen
-  FU.computing, FU.ctx, FU.res = true, nil, nil
+  -- noData era da conta anterior (do leilão sem varredura, por exemplo): sem zerar, trocar pra
+  -- Dungeons mostrava "o banco não carregou" até a conta nova acabar (14/11).
+  FU.computing, FU.noData, FU.ctx, FU.res = true, false, nil, nil
   FU.refresh()
   FU.compute(function(ctx)
     if gen ~= FU.gen then return end
