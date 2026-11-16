@@ -702,13 +702,19 @@ function FU.draw()
     local names = { quest = "Quests", dungeon = "Dungeons", vendor = "Vendedores" }
     info = string.format("%s · %d itens no banco (de %s) · lvl %d", names[FU.view()] or "Fontes", ctx.total or 0,
       FU.src.available() or "?", ctx.level)
-    if (ctx.pending or 0) > 0 then info = info .. string.format(" · %d ainda sem dados (abre de novo daqui a pouco)", ctx.pending) end
+    if FU.computing and (ctx.pending or 0) > 0 then
+      info = info .. string.format(" · |cff88ccffcarregando %d itens...|r", ctx.pending)
+    elseif (ctx.pending or 0) > 0 then
+      info = info .. string.format(" · %d não carregaram", ctx.pending)
+    end
   else
     info = string.format("Varredura de %s · %d peças · teu gold %s · lvl %d", scanWhen(), ctx.total or 0,
       FU.coins(ctx.money), ctx.level)
     if ah.mode == "vaultsync" then info = info .. " · varredura do VaultSync" end
     if (ctx.skipped or 0) > 0 then info = info .. string.format(" · %d pedem profissão/reputação", ctx.skipped) end
-    if (ctx.pending or 0) > 0 then info = info .. string.format(" · %d sem dados", ctx.pending) end
+    if (ctx.pending or 0) > 0 then
+      info = info .. string.format(FU.computing and " · carregando %d" or " · %d sem dados", ctx.pending)
+    end
     if (ctx.missing or 0) > 0 then
       info = info .. string.format(" · |cffff5050%d peça(s) equipada(s) sem dados: fecha e abre a janela|r", ctx.missing)
     end
@@ -765,7 +771,9 @@ function FU.draw()
     if r then drawRow(row, r, ctx, key == "all") end
   end
   local empty = ""
-  if ctx and #list == 0 then
+  if ctx and #list == 0 and FU.computing then
+    empty = "Carregando os itens..."
+  elseif ctx and #list == 0 then
     empty = "Nada que seja upgrade aqui com esses filtros."
     if db.plus == 0 then empty = empty .. "\nTenta +3 levels" .. (FU.maxPiece() and " ou um preço máximo maior." or ".") end
     if db.plus ~= 0 and FU.maxPiece() then empty = empty .. "\nTenta um preço máximo maior." end
@@ -838,9 +846,15 @@ function FU.show()
     FU.computing = false
     FU.noData = ctx == nil
     FU.ctx = ctx
-    if ctx then FU.ctxBy[fam] = ctx end
+    -- Com peça ainda sem dados, não guarda: abrir de novo refaz a conta e as que chegaram entram.
+    if ctx and (ctx.pending or 0) == 0 then FU.ctxBy[fam] = ctx end
     FU.refresh()
-  end, gen)
+  end, gen, function(ctx)
+    -- Conta parcial: mostra o que já carregou e vai enchendo a cada tentativa.
+    if gen ~= FU.gen then return end
+    FU.ctx = ctx
+    FU.refresh()
+  end)
 end
 
 -- Tooltips e cliques ------------------------------------------------------------
@@ -1009,6 +1023,13 @@ function FU.run(msg)
     else
       say(string.format("última conta (%s): %d itens · %.0f ms de trabalho em %d fatias (maior %.1f ms) · %d sem dados depois de %d tentativas",
         p.mode, p.items, p.work, p.slices, p.maxSlice, p.pending or 0, p.tries or 0))
+      local w = p.why or {}
+      say(string.format("onde parou: %d level · %d classe/slot · %d sem dados · %d ganho baixo · %d profissão/rep · %d entraram · %d falharam",
+        w.level or 0, w.slot or 0, w.nodata or 0, w.gain or 0, w.blocked or 0, w.cand or 0, w.err or 0))
+      if p.err then say("primeira falha: " .. p.err) end
+      local n = 0
+      for _, rows in pairs(FU.res or {}) do n = n + #rows end
+      say(string.format("na lista agora (%s): %d linhas", FU.view(), n))
     end
     return
   end
@@ -1139,7 +1160,7 @@ end
 
 local ev = CreateFrame("Frame")
 for _, e in ipairs({ "ADDON_LOADED", "PLAYER_LOGIN", "AUCTION_HOUSE_SHOW", "AUCTION_HOUSE_CLOSED", "PLAYER_MONEY",
-  "PLAYER_EQUIPMENT_CHANGED", "PLAYER_LEVEL_UP", "QUEST_TURNED_IN" }) do
+  "PLAYER_EQUIPMENT_CHANGED", "PLAYER_LEVEL_UP", "QUEST_TURNED_IN", "QUEST_ACCEPTED", "QUEST_REMOVED" }) do
   pcall(ev.RegisterEvent, ev, e)
 end
 ev:SetScript("OnEvent", function(_, event, arg1)
@@ -1149,7 +1170,12 @@ ev:SetScript("OnEvent", function(_, event, arg1)
   end
   if event == "PLAYER_LOGIN" then
     pcall(FU.attachCharButton)
+    C_Timer.After(8, function() pcall(FU.warm) end)
     return
+  end
+  if event == "PLAYER_LEVEL_UP" then C_Timer.After(3, function() pcall(FU.warm) end) end
+  if event == "QUEST_ACCEPTED" or event == "QUEST_REMOVED" or event == "QUEST_TURNED_IN" then
+    FU.invalidate("src") -- quest pegada, largada ou entregue: muda a ordem e o que aparece
   end
   if event == "AUCTION_HOUSE_SHOW" then pcall(FU.attachAHButton) end
   local f = FU.frame
@@ -1157,8 +1183,7 @@ ev:SetScript("OnEvent", function(_, event, arg1)
   if event == "PLAYER_MONEY" then
     if FU.ctx then FU.ctx.money = GetMoney() or FU.ctx.money end
     FU.refresh()
-  elseif event == "QUEST_TURNED_IN" then
-    FU.invalidate("src") -- a quest entregue sai da lista na próxima vez
+  elseif event == "QUEST_TURNED_IN" or event == "QUEST_ACCEPTED" or event == "QUEST_REMOVED" then
     if FU.mode() == "src" then FU.show() end
   elseif event == "PLAYER_EQUIPMENT_CHANGED" or event == "PLAYER_LEVEL_UP" then
     FU.invalidate()

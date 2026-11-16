@@ -173,9 +173,10 @@ elseif GameTooltip and GameTooltip.HookScript then
   if ItemRefTooltip then ItemRefTooltip:HookScript("OnTooltipSetItem", onTooltip) end
 end
 
--- Trocou peça ou subiu de level: o equipado muda.
+-- Trocou peça ou subiu de level: o equipado muda. Pegou, largou ou entregou quest: a fonte muda.
 local ev = CreateFrame("Frame")
 ev:SetScript("OnEvent", function() tip.reset() end)
-for _, e in ipairs({ "PLAYER_EQUIPMENT_CHANGED", "PLAYER_LEVEL_UP", "PLAYER_TALENT_UPDATE" }) do
+for _, e in ipairs({ "PLAYER_EQUIPMENT_CHANGED", "PLAYER_LEVEL_UP", "PLAYER_TALENT_UPDATE", "QUEST_ACCEPTED",
+  "QUEST_REMOVED", "QUEST_TURNED_IN" }) do
   pcall(ev.RegisterEvent, ev, e)
 end

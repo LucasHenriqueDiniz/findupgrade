@@ -92,6 +92,16 @@ function FU.tooltipStats(link, s, slot)
   end
 end
 
+-- Pede os dados do item ao servidor, no máximo 1 vez a cada 2 s por item (a conta tenta de novo
+-- a cada meio segundo e não precisa pedir de novo).
+FU.asked = {}
+function FU.requestItem(id)
+  local now = GetTime and GetTime() or 0
+  if (FU.asked[id] or -10) > now - 2 then return end
+  FU.asked[id] = now
+  if C_Item.RequestLoadItemDataByID then C_Item.RequestLoadItemDataByID(id) end
+end
+
 -- Stats de um link (nil se o cliente ainda não tem os dados do item: pede e tenta depois).
 function FU.stats(link, noCache, slot)
   if not link then return nil end
@@ -99,7 +109,7 @@ function FU.stats(link, noCache, slot)
   if c then return c end
   local id = tonumber(link:match("item:(%d+)") or "")
   if id and C_Item.IsItemDataCachedByID and not C_Item.IsItemDataCachedByID(id) then
-    if C_Item.RequestLoadItemDataByID then C_Item.RequestLoadItemDataByID(id) end
+    FU.requestItem(id)
     return nil
   end
   local s = {}

@@ -3,8 +3,11 @@
 --   EQUIP[slot] = link equipado · LISTINGS = { { id, buyout, link }, ... } · CACHED[id] = false (sem dados)
 --   CLASS, LEVEL, MONEY
 local events, timers = {}, {}
-C_Timer = { After = function(_, fn) timers[#timers + 1] = fn end }
-function runTimers() local n = 0; while #timers > 0 and n < 6000 do n = n + 1; local fn = table.remove(timers, 1); fn() end end
+-- Relógio do jogo: anda o atraso de cada timer quando ele roda (GetTime).
+NOW = 0
+function GetTime() return NOW end
+C_Timer = { After = function(d, fn) timers[#timers + 1] = { d or 0, fn } end }
+function runTimers() local n = 0; while #timers > 0 and n < 6000 do n = n + 1; local t = table.remove(timers, 1); NOW = NOW + t[1]; t[2]() end end
 function fire(e, ...) for _, f in ipairs(events[e] or {}) do if f.fn then f.fn(f, e, ...) end end; runTimers() end
 function clearEvents() for k in pairs(events) do events[k] = nil end end
 function InCombatLockdown() return false end

@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.8.0 · 16/11/2026
+
+- **Quests pelo teu level.** O level de uma peça agora é o da quest: o maior entre o que o item pede e o level pra pegar a quest (ou o mínimo da dungeon). Antes, a Zandalarian Hero Charm (quest de lvl 58, item sem level pedido) aparecia como upgrade no 24.
+- **Quest de outra raça ou classe some.** O banco agora tem raças, classes e as quests que vêm antes de cada uma.
+- **As tuas quests primeiro.** Em Quests vêm primeiro as que estão no log ("No log"), depois as que dá pra pegar agora ("Pegar"), depois as que têm quest antes ("+2 quests"). O tooltip diz quantas vêm antes e por qual a corrente começa, com o level, quem dá e a zona. Pegar, largar ou entregar quest refaz a lista.
+- **Cada botão mostra a fonte dele:** a quest em Quests, o drop em Dungeons, o vendedor em Vendedores.
+- **A janela não fica vazia esperando.**
+  - A lista aparece com o que já carregou e vai enchendo ("carregando N itens...").
+  - Tenta de novo a cada 0,5 s, em vez de 2 s, e para quando nada mais chega.
+  - Uns segundos depois do login, o addon já pede ao servidor os itens que você pode usar.
+- **Peça que dá erro não para a conta.** Antes, a janela podia ficar em "Calculando..." pra sempre.
+- **Conta incompleta não fica guardada:** reabrir a janela refaz.
+- **`/fu debug`** mostra em que etapa cada peça parou (level, slot, sem dados, ganho baixo...). O último resultado fica salvo em `FindUpgradeDB.lastRun`.
+- Banco: 4.226 itens, 2.420 quests (com as que só abrem corrente), 463 KB.
+
 ## 1.7.2 · 15/11/2026
 
 - **O DPS da wand conta** pra cura (1 DPS = 2 pontos) e dano mágico (3 pontos). Antes não contava, e uma wand mais fraca com +2 Int saía upgrade (Moonstone Wand sobre a Greater Magic Wand). O DPS da staff e da maça continua fora.

@@ -56,7 +56,7 @@ function FU.context()
   end
   local ctx = { class = cls, ci = ci, level = level, money = GetMoney() or 0, role = role, rs = rs, w = w,
     min = db.minGain or rs.min or 2, tier = (level >= 40 and ci.armor40) or ci.armor, eq = {}, missing = 0, skipped = 0,
-    cand = {}, w2h = {}, wmh = {}, woh = {} }
+    cand = {}, w2h = {}, wmh = {}, woh = {}, why = {} }
   -- Logo depois do /reload o Forever ainda não tem os dados das peças equipadas: o link vem com
   -- o nome vazio ("[]") e sem stats. Conta como faltando e o compute espera carregar.
   local dump = {}
@@ -127,11 +127,16 @@ function FU.base(ctx, key)
 end
 
 -- Uma peça à venda: vira candidata do grupo dela (só se ganha do equipado) ou das armas.
+-- ctx.why conta onde cada peça parou (o /fu debug mostra; serve pra achar lista vazia no jogo).
+local function why(ctx, k) ctx.why[k] = (ctx.why[k] or 0) + 1 end
+
 function FU.evaluate(g, ctx, pending)
   local req = g.level or 0
-  if not g.link or req > ctx.level + FU.MAXPLUS then return end
+  if not g.link or req > ctx.level + FU.MAXPLUS then return why(ctx, "level") end
+  -- Nenhuma fonte que ele pegue até o level dele + 10 (quest de lvl 58, dungeon de 60).
+  if g.src and (g.src.lvl or 0) > ctx.level + FU.MAXPLUS then return why(ctx, "level") end
   local slots = FU.slotsFor(g, ctx)
-  if not slots then return end
+  if not slots then return why(ctx, "slot") end
   local s = FU.stats(g.link)
   if not s then
     pending[#pending + 1] = g
@@ -147,7 +152,7 @@ function FU.evaluate(g, ctx, pending)
     local lv = select(5, C_Item.GetItemInfo(g.link))
     if lv then
       g.level, g.levelGuess, req = lv, nil, lv
-      if req > ctx.level + FU.MAXPLUS then return end
+      if req > ctx.level + FU.MAXPLUS then return why(ctx, "level") end
     end
   end
   local kind = FU.weaponKind(g)
@@ -156,12 +161,13 @@ function FU.evaluate(g, ctx, pending)
   local c = { g = g, s = s, score = FU.scoreFor(s, ctx, slot), price = g.price or 0, req = req }
   if not kind then
     local key = FU.GROUP_OF[slots[1]]
-    if c.score - FU.base(ctx, key).score < ctx.min then return end
+    if c.score - FU.base(ctx, key).score < ctx.min then return why(ctx, "gain") end
   end
   if FU.blocked(g.link) then
     ctx.skipped = ctx.skipped + 1
-    return
+    return why(ctx, "blocked")
   end
+  why(ctx, "cand")
   if kind == "2h" then
     ctx.w2h[#ctx.w2h + 1] = c
   elseif kind == "mh" then
@@ -186,9 +192,16 @@ end
 local clock = debugprofilestop or function() return os.clock() * 1000 end
 local BUDGET = 8
 
+-- Peça que ainda não carregou: tenta de novo a cada RETRY s. Para quando todas chegaram, quando
+-- passa MAXWAIT s ou quando STUCK tentativas seguidas não trazem nenhuma (item que o servidor não
+-- tem). Antes eram 2 s entre tentativas e a janela ficava vazia até a última (16/11).
+local RETRY, STUCK = 0.5, 8
+local MAXWAIT = { src = 15, ah = 6 }
+
 -- Calcula em fatias de até BUDGET ms e chama done(ctx), ou done(nil) sem lista. gen: se outra
--- conta começou depois (FU.gen mudou), esta para no meio e não chama done.
-function FU.compute(done, gen)
+-- conta começou depois (FU.gen mudou), esta para no meio e não chama done. progress(ctx): a
+-- conta parcial, a cada tentativa enquanto ainda tem peça carregando (a janela já mostra).
+function FU.compute(done, gen, progress)
   local function stale() return gen and gen ~= FU.gen end
   local t0 = clock()
   local list = FU.load()
@@ -204,13 +217,16 @@ function FU.compute(done, gen)
     return
   end
   FU.waitEq = 0
-  local pending, tries = {}, 0
-  local maxTries = FU.mode() == "src" and 8 or 3 -- quest e dungeon trazem centenas de itens nunca vistos
+  local pending, tries, stuck, last = {}, 0, 0, nil
+  local maxTries = math.floor(MAXWAIT[FU.mode()] / RETRY)
   local perf = { mode = FU.view(), items = #list, work = clock() - t0, slices = 1, maxSlice = clock() - t0 }
   local function finish()
     ctx.total, ctx.pending = #list, #pending
-    perf.pending, perf.tries = #pending, tries
+    ctx.why.nodata = #pending
+    perf.pending, perf.tries, perf.why, perf.level = #pending, tries, ctx.why, ctx.level
+    perf.at = date and date("%d/%m %H:%M") or nil
     FU.perf = perf
+    FU.db().lastRun = perf -- fica no arquivo salvo (pra conferir fora do jogo)
     done(ctx)
   end
   -- Avalia a lista em fatias de até BUDGET ms; then() quando acabar.
@@ -221,7 +237,12 @@ function FU.compute(done, gen)
       local s0 = clock()
       while i < #items do
         i = i + 1
-        FU.evaluate(items[i], ctx, pending)
+        -- Uma peça que dá erro não para a conta (antes a janela ficava em "Calculando..." pra sempre).
+        local ok, err = pcall(FU.evaluate, items[i], ctx, pending)
+        if not ok then
+          ctx.why.err = (ctx.why.err or 0) + 1
+          perf.err = perf.err or tostring(err)
+        end
         if clock() - s0 > BUDGET then break end
       end
       local ms = clock() - s0
@@ -236,8 +257,14 @@ function FU.compute(done, gen)
     slice()
   end
   local function afterPass()
-    if #pending > 0 and tries < maxTries then
-      C_Timer.After(2, function()
+    stuck = (last and #pending >= last) and stuck + 1 or 0
+    last = #pending
+    if #pending > 0 and tries < maxTries and stuck < STUCK then
+      if progress then
+        ctx.total, ctx.pending = #list, #pending
+        progress(ctx)
+      end
+      C_Timer.After(RETRY, function()
         if stale() then return end
         tries = tries + 1
         local again = pending
@@ -249,6 +276,34 @@ function FU.compute(done, gen)
     end
   end
   sliced(list, afterPass)
+end
+
+-- No login (e ao subir de level), pede ao servidor, aos poucos, os itens das fontes que ele pode
+-- usar: a janela de Quests, Dungeons e Vendedores abre já cheia, sem esperar carregar (16/11).
+function FU.warm()
+  if not (FU.SOURCES and FU.src and C_Item.IsItemDataCachedByID) then return end
+  local _, cls = UnitClass("player")
+  local ci = FU.CLASSES[cls or ""] or FU.CLASSES.WARRIOR
+  local level = UnitLevel("player") or 1
+  local lite = { ci = ci, tier = (level >= 40 and ci.armor40) or ci.armor }
+  local ids = {}
+  for _, g in ipairs(FU.src.load() or {}) do
+    if (g.src.lvl or 0) <= level + FU.MAXPLUS and (g.level or 0) <= level + FU.MAXPLUS and FU.slotsFor(g, lite)
+      and not C_Item.IsItemDataCachedByID(g.id) then
+      ids[#ids + 1] = g.id
+    end
+  end
+  FU.warmed = #ids
+  local i = 0
+  local function step()
+    for _ = 1, 40 do
+      i = i + 1
+      if i > #ids then return end
+      FU.requestItem(ids[i])
+    end
+    C_Timer.After(0.1, step)
+  end
+  step()
 end
 
 -- Filtros: level (até o meu + N), preço máximo por peça e, se marcado, o total cabe no gold.
@@ -264,14 +319,31 @@ end
 
 local function pass(c, f)
   if c.kept then return true end
-  if c.req > f.maxLevel then return false end
-  if f.kind then
+  if f.kind and c.g.srcBy then
+    -- Cada botão mostra a fonte dele (a quest em Quests, o drop em Dungeons) e o level que ela
+    -- pede: item sem level pedido de quest lvl 58 não é pro lvl 24.
+    local s = c.g.srcBy[f.kind]
+    if not s then return false end
+    c.g.src = s
+    c.req = math.max(c.g.level or 0, s.lvl or 0)
+  elseif f.kind then
     local k = c.g.src and c.g.src.kinds or {}
     -- Vendedores junta vendedor e intendente de reputação.
     if not (k[f.kind] or (f.kind == "vendor" and k.rep)) then return false end
   end
+  if c.req > f.maxLevel then return false end
   if f.maxPiece and c.price > f.maxPiece then return false end
   return true
+end
+
+-- Em Quests: as do log primeiro, depois as que dá pra pegar agora, depois as com quest antes.
+local function tierOf(parts)
+  local t
+  for _, c in ipairs(parts) do
+    local s = not c.kept and c.g.src
+    if s and s.tier and (not t or s.tier > t) then t = s.tier end
+  end
+  return t
 end
 
 local function byScore(a, b) return a.score > b.score end
@@ -308,7 +380,7 @@ function FU.weaponRows(ctx, f, rows)
     local gain = score - base
     if bought > 0 and gain >= ctx.min then
       rows[#rows + 1] = { group = "weapon", slot = "MainHand", kind = kind, parts = parts, s = s, gain = gain,
-        price = price, req = req, replaces = baseName, partGain = partGain }
+        price = price, req = req, replaces = baseName, partGain = partGain, tier = f.kind == "quest" and tierOf(parts) or nil }
     end
   end
   if f.weaponMode ~= "pair" then
@@ -345,6 +417,7 @@ function FU.weaponRows(ctx, f, rows)
 end
 
 local function byGain(a, b)
+  if (a.tier or 0) ~= (b.tier or 0) then return (a.tier or 0) < (b.tier or 0) end
   if a.gain ~= b.gain then return a.gain > b.gain end
   return a.price < b.price
 end
@@ -361,7 +434,8 @@ function FU.results(ctx, f)
       for _, c in ipairs(ctx.cand[gr.key] or {}) do
         if pass(c, f) then
           rows[#rows + 1] = { group = gr.key, slot = base.slot, parts = { c }, s = c.s, gain = c.score - base.score,
-            price = c.price, req = c.req, replaces = base.name, breaksSet = base.set ~= nil }
+            price = c.price, req = c.req, replaces = base.name, breaksSet = base.set ~= nil,
+            tier = f.kind == "quest" and tierOf({ c }) or nil }
         end
       end
     end

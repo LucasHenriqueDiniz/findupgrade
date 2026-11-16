@@ -70,7 +70,28 @@ for (const it of W.items || []) {
 // Itens: fontes do LootGoblin; % do Wishwell no drop do mesmo boss/dungeon.
 const KIND = { quests: 1, dungeons: 2, vendors: 3, reputation: 4 };
 const items = new Map(); // id → { req, side, src: [] }
-const quests = new Map(); // id → [name, minLevel, questLevel, zone]
+const quests = new Map(); // id → [name, minLevel, questLevel, zone, races, classes, preAll, preAny, starter]
+const arr = (x) => (Array.isArray(x) ? x : Object.values(x || {})).map(Number).filter(Boolean);
+// Quem começa a quest: o NPC, ou "[item]" quando ela começa num item que dropa.
+function starterOf(q) {
+  const npc = arr(q?.starters)[0];
+  if (npc && LG.npcs?.[npc]?.name) return LG.npcs[npc].name;
+  const item = arr(q?.startItems)[0];
+  const route = item && q?.startItemRoutes?.[item];
+  return route?.name ? `[${route.name}]` : '';
+}
+// A quest e as que vêm antes dela (pra contar a corrente e dizer onde ela começa).
+function addQuest(id, fallbackName, fallbackLevel) {
+  if (!id || quests.has(id)) return;
+  const q = LG.quests && LG.quests[id];
+  const preAll = arr(q?.preAll), preAny = arr(q?.preAny);
+  // Zona: a da quest; senão a de quem dá (a zona da quest às vezes é uma subzona sem nome).
+  const npc = arr(q?.starters)[0];
+  const zone = zoneName(q?.zone) || zoneName(LG.npcs?.[npc]?.locations?.[0]?.area) || '';
+  quests.set(id, [q?.name || fallbackName || '?', q?.level || fallbackLevel || 0, q?.questLevel || 0, zone,
+    q?.races || 0, q?.classes || 0, preAll, preAny, starterOf(q)]);
+  for (const p of [...preAll, ...preAny]) addQuest(p);
+}
 let stats = { quest: 0, dungeon: 0, vendor: 0, rep: 0, rate: 0, wwOnly: 0, wwQuest: 0 };
 for (const it of LG.items || []) {
   if (!(it.classID === 2 || it.classID === 4)) continue;
@@ -79,10 +100,7 @@ for (const it of LG.items || []) {
     const k = KIND[s.category];
     if (!k) continue;
     if (k === 1 && s.quest) {
-      const q = LG.quests && LG.quests[s.quest];
-      if (!quests.has(s.quest)) {
-        quests.set(s.quest, [q?.name || s.target || '?', q?.level || s.level || 0, q?.questLevel || 0, zoneName(q?.zone) || '']);
-      }
+      addQuest(s.quest, s.target, s.level);
       src.push([1, s.quest]);
       stats.quest++;
     } else if (k === 2) {
@@ -134,9 +152,14 @@ lines.push('  -- dungeon: { nome, zona, level mínimo, level máximo }');
 lines.push('  instances = {');
 for (const i of instances) lines.push(`    [${i.idx}] = { ${q(i.name)}, ${q(i.zone)}, ${i.min}, ${i.max} },`);
 lines.push('  },');
-lines.push('  -- quest: { nome, level pra pegar, level da quest, zona }');
+lines.push('  -- quest: { nome, level pra pegar, level da quest, zona, raças, classes, todas antes, uma antes, quem dá }.');
+lines.push('  -- Raças e classes: bit (raceID/classID - 1), 0 = todas. Antes: ids das quests que vêm antes (nil = nenhuma).');
+lines.push('  -- Quem dá: o NPC, ou "[item]" quando começa num item. Vêm também as quests que só abrem a corrente.');
 lines.push('  quests = {');
-for (const [id, x] of [...quests].sort((a, b) => a[0] - b[0])) lines.push(`    [${id}] = { ${q(x[0])}, ${x[1]}, ${x[2]}, ${q(x[3])} },`);
+const ids = (a) => (a.length ? `{ ${a.join(', ')} }` : 'nil');
+for (const [id, x] of [...quests].sort((a, b) => a[0] - b[0])) {
+  lines.push(`    [${id}] = { ${q(x[0])}, ${x[1]}, ${x[2]}, ${q(x[3])}, ${x[4]}, ${x[5]}, ${ids(x[6])}, ${ids(x[7])}, ${q(x[8])} },`);
+}
 lines.push('  },');
 lines.push('  -- item: { level pedido (negativo = mínimo da dungeon, o do item vem do jogo), facção (0 as duas,');
 lines.push('  -- 1 Aliança, 2 Horda), fontes... }. Fonte: { 1, quest } · { 2, dungeon, boss, % de drop } ·');
